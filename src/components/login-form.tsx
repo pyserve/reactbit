@@ -25,8 +25,8 @@ import toast from "react-hot-toast";
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<string | null>(null);
-  const login = useLogin();
   const { setSessionData } = useSession();
+  const login = useLogin();
 
   const form = useForm<LoginFormSchemaType>({
     resolver: zodResolver(LoginFormSchema),
@@ -40,12 +40,12 @@ export function LoginForm() {
     console.log("🚀 ~ onSubmit ~ values:", values);
     setErrors(null);
     setIsLoading(true);
-
     try {
       const data = await login.mutateAsync(values);
       console.log("🚀 ~ onSubmit ~ data:", data);
       setSessionData(data);
       toast.success("You've successfully logged in.");
+      window.location.reload();
     } catch (error: any) {
       const resErrors =
         error?.message || "Invalid email or password. Please try again.";
