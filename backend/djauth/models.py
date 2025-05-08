@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, Permission
 from django.db import models
+from django.db.models import Count
 
 
 class User(AbstractUser):
@@ -19,6 +20,35 @@ class User(AbstractUser):
         related_name="custom_user_permissions",
         blank=True,
     )
+    followers = models.ManyToManyField(
+        "self",
+        symmetrical=False,
+        related_name="following",
+        blank=True,
+    )
+
+    def get_mutual_follow(self):
+        following = self.following.all()
+        users = (
+            User.objects.filter(followers__in=following)
+            .exclude(id=self.id)
+            .exclude(id__in=following)
+            .distinct()
+        )
+        return users
+
+    def get_suggestions(self):
+        following = self.following.all()
+        return (
+            User.objects.filter(followers__in=following)
+            .exclude(id__in=following.values_list("id", flat=True))
+            .exclude(id=self.id)
+            .distinct()
+        )
+
+    def save(self, *args, **kwargs):
+        self.display_name = f"{self.first_name} {self.last_name}".strip()
+        super().save(*args, **kwargs)
 
 
 class Group(models.Model):

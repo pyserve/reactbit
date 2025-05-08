@@ -46,7 +46,6 @@ export default function SettingsPage() {
     e.preventDefault();
     setFormSubmitted(true);
 
-    // Reset the form submitted state after 3 seconds
     setTimeout(() => {
       setFormSubmitted(false);
     }, 3000);

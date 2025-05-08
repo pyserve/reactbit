@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     "chat.apps.ChatConfig",
     "video.apps.VideoConfig",
     "djauth.apps.DjauthConfig",
+    "post.apps.PostConfig",
     "corsheaders",
     "rest_framework",
     "rest_framework.authtoken",
@@ -29,6 +30,12 @@ INSTALLED_APPS = [
 AUTH_USER_MODEL = "djauth.User"
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -118,6 +125,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "static/"
+MEDIA_URL = "media/"
+
+STATIC_ROOT = Path.joinpath(BASE_DIR, "static")
+MEDIA_ROOT = Path.joinpath(BASE_DIR, "media")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

@@ -1,6 +1,5 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,9 +9,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getSession, useSession } from "@/hooks/use-session";
-import { LogOut, Settings, User } from "lucide-react";
+import { BellIcon, LogOut, Settings, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import pkg from "../../package.json";
+import UserAvatar from "./user-avatar";
 
 export default function Header() {
   const session = getSession();
@@ -38,6 +38,17 @@ export default function Header() {
           </div>
 
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="flex items-center px-1 py-0 rounded-full"
+                >
+                  <BellIcon />
+                </Button>
+              </DropdownMenuTrigger>
+            </DropdownMenu>
+
             {session?.user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -45,15 +56,7 @@ export default function Header() {
                     variant="ghost"
                     className="flex items-center px-1 py-0 rounded-full"
                   >
-                    <Avatar className="h-8 w-8 rounded-full">
-                      <AvatarImage
-                        src={session.user?.image || "/placeholder.svg"}
-                        alt={session.user?.username || "User"}
-                      />
-                      <AvatarFallback className="bg-amber-100 capitalize">
-                        {session.user?.username?.[0] || "U"}
-                      </AvatarFallback>
-                    </Avatar>
+                    <UserAvatar />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
@@ -62,6 +65,14 @@ export default function Header() {
                       Session expired
                     </div>
                   )}
+                  <DropdownMenuItem className="border-b">
+                    <div className="flex flex-col">
+                      <div className="capitalize font-bold">
+                        {session?.user?.username}
+                      </div>
+                      <div className="text-xs">{session?.user?.email}</div>
+                    </div>
+                  </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => navigate("/profile")}
                     className="cursor-pointer"

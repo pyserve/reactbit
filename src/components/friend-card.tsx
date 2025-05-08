@@ -27,12 +27,12 @@ export default function FriendCard({
       <div className="flex items-center gap-3 min-w-0">
         <Avatar className="border border-gray-200 dark:border-gray-800 h-10 w-10">
           <AvatarImage
-            src={user.avatar || "/placeholder.svg"}
-            alt={user.name}
+            src={user?.avatar || "/placeholder.svg"}
+            alt={user.display_name}
           />
           <AvatarFallback className="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-            {user.name.charAt(0)}
-            {user.name.split(" ")[1]?.charAt(0)}
+            {user.display_name?.charAt(0)}
+            {user.display_name?.split(" ")[1]?.charAt(0)}
           </AvatarFallback>
         </Avatar>
         <div className="min-w-0">
@@ -40,10 +40,10 @@ export default function FriendCard({
             href={`/profile/${user.username}`}
             className="font-medium hover:underline text-black dark:text-white truncate block"
           >
-            {user.name}
+            {(user?.first_name ?? "User") + " " + user?.last_name}
           </a>
           <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-            @{user.username}
+            @{user.email}
           </p>
         </div>
       </div>

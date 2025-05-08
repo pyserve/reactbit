@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getSession } from "@/hooks/use-session";
 import {
   CalendarDays,
   Edit,
@@ -23,138 +24,15 @@ import {
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 
-// Mock user data
-const mockUsers = {
-  alexj: {
-    id: 1,
-    username: "alexj",
-    name: "Alex Johnson",
-    bio: "Software engineer passionate about UI/UX design and web technologies. Building tools that make people's lives easier.",
-    avatar: "/placeholder.svg?height=150&width=150",
-    coverImage: "/placeholder.svg?height=300&width=1200",
-    location: "San Francisco, CA",
-    website: "alexjohnson.dev",
-    joinDate: "January 2020",
-    following: 245,
-    followers: 1024,
-    posts: [
-      {
-        id: 1,
-        content:
-          "Just launched my new portfolio website! Check it out and let me know what you think.",
-        date: "2 days ago",
-        likes: 24,
-        comments: 8,
-      },
-      {
-        id: 2,
-        content:
-          "Working on a new open-source project that helps developers build accessible UIs faster. Stay tuned for updates!",
-        date: "1 week ago",
-        likes: 56,
-        comments: 12,
-      },
-      {
-        id: 3,
-        content:
-          "Attended an amazing conference on web performance yesterday. So many great insights to implement!",
-        date: "2 weeks ago",
-        likes: 42,
-        comments: 5,
-      },
-    ],
-    projects: [
-      {
-        id: 1,
-        name: "Portfolio Website",
-        description: "Personal portfolio showcasing my work and skills",
-        technologies: ["React", "Tailwind CSS", "Framer Motion"],
-        link: "https://alexjohnson.dev",
-      },
-      {
-        id: 2,
-        name: "AccessUI",
-        description:
-          "Open-source library for building accessible UI components",
-        technologies: ["TypeScript", "React", "ARIA"],
-        link: "https://github.com/alexj/accessui",
-      },
-    ],
-  },
-  samr: {
-    id: 2,
-    username: "samr",
-    name: "Sam Rivera",
-    bio: "Product designer and illustrator. Creating digital experiences that delight users.",
-    avatar: "/placeholder.svg?height=150&width=150",
-    coverImage: "/placeholder.svg?height=300&width=1200",
-    location: "Portland, OR",
-    website: "samrivera.design",
-    joinDate: "March 2019",
-    following: 312,
-    followers: 1456,
-    posts: [
-      {
-        id: 1,
-        content: "Just published my new design system case study. Link in bio!",
-        date: "3 days ago",
-        likes: 78,
-        comments: 14,
-      },
-      {
-        id: 2,
-        content:
-          "Design tip: Always test your color palette for accessibility. Here's a tool I use daily.",
-        date: "1 week ago",
-        likes: 92,
-        comments: 23,
-      },
-    ],
-    projects: [
-      {
-        id: 1,
-        name: "Harmony Design System",
-        description: "A comprehensive design system for web and mobile",
-        technologies: ["Figma", "Storybook", "React"],
-        link: "https://harmony.design",
-      },
-    ],
-  },
-  current: {
-    id: 0,
-    username: "current",
-    name: "Your Name",
-    bio: "This is your profile. Add a bio to tell the world about yourself.",
-    avatar: "/placeholder.svg?height=150&width=150",
-    coverImage: "/placeholder.svg?height=300&width=1200",
-    location: "Your Location",
-    website: "yourwebsite.com",
-    joinDate: "April 2023",
-    following: 42,
-    followers: 38,
-    posts: [
-      {
-        id: 1,
-        content: "Just set up my new profile!",
-        date: "Just now",
-        likes: 0,
-        comments: 0,
-      },
-    ],
-    projects: [],
-  },
-};
-
 export default function ProfilePage() {
   const { username } = useParams();
   const [activeTab, setActiveTab] = useState("posts");
+  const session = getSession();
 
-  // If no username is provided or if "me" is provided, show current user
   const profileUsername = username || "current";
   const isCurrentUser = profileUsername === "current";
 
-  // Get user data
-  const userData = mockUsers[profileUsername] || mockUsers.current;
+  const userData = session?.user;
 
   return (
     <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white">
