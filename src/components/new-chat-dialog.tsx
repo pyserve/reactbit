@@ -8,15 +8,17 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { getSession } from "@/hooks/use-session";
-import { UserType } from "@/schemas";
+import { fetchOrCreateConversationType, UserType } from "@/schemas";
+import { MessageCircleHeart } from "lucide-react";
 import { ReactElement, useState } from "react";
+import PieAvatar from "./pie-avatar";
 import { Button } from "./ui/button";
 
 export default function NewChatDialog({
   createNewConversation,
   trigger,
 }: {
-  createNewConversation: (participants: UserType[]) => void;
+  createNewConversation: fetchOrCreateConversationType;
   trigger?: ReactElement;
 }) {
   const session = getSession();
@@ -31,7 +33,6 @@ export default function NewChatDialog({
   );
 
   const handleStartChat = (participants: UserType[]) => {
-    console.log("🚀 ~ handleStartChat ~ user:", participants);
     createNewConversation(participants);
     setDialogOpen(false);
   };
@@ -39,8 +40,13 @@ export default function NewChatDialog({
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
-        <Button className="" onClick={() => setDialogOpen(true)}>
-          {trigger ? trigger : "Start Chat"}
+        <Button
+          size={"sm"}
+          variant={"outline"}
+          className="border-gray-300"
+          onClick={() => setDialogOpen(true)}
+        >
+          {trigger ? trigger : "Start New Chat"}
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -56,18 +62,25 @@ export default function NewChatDialog({
               key={user?.id}
               className="flex items-center justify-between border p-2 rounded"
             >
-              <div>
-                <div className="font-semibold">{user?.username}</div>
-                <div className="text-sm text-muted-foreground">
-                  {user?.email}
+              <div className="flex items-center">
+                <div className="mr-2">
+                  <PieAvatar participants={[user, session.user]} />
+                </div>
+                <div>
+                  <div className="font-semibold">{user?.username}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {user?.email}
+                  </div>
                 </div>
               </div>
               <Button
                 type="button"
+                className="bg-blue-500 text-white"
                 variant="outline"
                 onClick={() => handleStartChat([user, session.user])}
               >
-                Start Chat
+                <MessageCircleHeart />
+                Message
               </Button>
             </div>
           ))}

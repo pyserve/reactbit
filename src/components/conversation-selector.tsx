@@ -4,19 +4,9 @@ import NewChatDialog from "./new-chat-dialog";
 
 const ConversationSelector = ({
   createNewConversation,
-  followers,
-  following,
 }: {
   createNewConversation: (participants: UserType[]) => void;
-  followers: UserType[];
-  following: UserType[];
 }) => {
-  const allUsers = Array.from(
-    new Map(
-      [...followers, ...following].map((user) => [user.id, user])
-    ).values()
-  );
-
   return (
     <div className="flex-1 flex items-center justify-center">
       <Card className="w-[80%] max-w-md">

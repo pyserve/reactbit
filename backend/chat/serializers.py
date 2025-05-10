@@ -1,11 +1,24 @@
 from chat.models import Conversation, Message
 from django.db.models import Count
+from djauth.models import User
 from djauth.serializers import UserSerializer
 from rest_framework.serializers import ModelSerializer
 
 
+class MessageSerializer(ModelSerializer):
+    sender = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Message
+        fields = "__all__"
+
+    def create(self, validated_data):
+        return super().create(validated_data)
+
+
 class ConversationSerializer(ModelSerializer):
     participants = UserSerializer(many=True, read_only=True)
+    messages = MessageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Conversation
@@ -28,9 +41,3 @@ class ConversationSerializer(ModelSerializer):
         validated_data["participants"] = participant_ids
         instance = super(ConversationSerializer, self).create(validated_data)
         return instance
-
-
-class MessageSerializer(ModelSerializer):
-    class Meta:
-        model = Message
-        fields = "__all__"

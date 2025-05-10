@@ -1,25 +1,57 @@
-import { UserType } from "@/schemas";
 import { Plus } from "lucide-react";
 import NewChatDialog from "./new-chat-dialog";
 import PieAvatar from "./pie-avatar";
 
-type ConversationListProps = {
-  conversations?: {
-    id: number;
-    participants: { display_name: string }[];
-    created_at: string;
-  }[];
-  createNewConversation: (participants: UserType[]) => void;
-  activeChat: number | null;
-  onSelectChat: (id: number) => void;
-};
+import { getSession } from "@/hooks/use-session";
+import { extractDate } from "@/lib/utils";
+import { ConversationType, fetchOrCreateConversationType } from "@/schemas";
 
 export default function ConversationList({
   conversations,
-  createNewConversation,
+  fetchOrCreateConversation,
   activeChat,
   onSelectChat,
-}: ConversationListProps) {
+}: {
+  conversations: ConversationType[];
+  fetchOrCreateConversation: fetchOrCreateConversationType;
+  activeChat: string | null;
+  onSelectChat: (id: string) => void;
+}) {
+  const session = getSession();
+
+  const getParticipantsName = (conversation: ConversationType) => {
+    return conversation?.participants
+      ?.filter((u) => u?.id !== session.user?.id)
+      .map((p) => p.display_name)
+      .join(", ");
+  };
+
+  const getMessageTime = (conversation: ConversationType) => {
+    return (
+      conversation?.messages.length > 0 &&
+      conversation.messages[conversation.messages.length - 1] &&
+      extractDate(
+        conversation.messages[conversation.messages.length - 1].timestamp
+      )
+    );
+  };
+
+  const getMessage = (conversation: ConversationType) => {
+    return conversation?.messages?.at(-1);
+  };
+
+  const isNewMessage = (conversation: ConversationType) => {
+    const last_message = conversation?.messages?.at(-1);
+    return last_message && !last_message?.is_read;
+  };
+
+  const isActiveChat = (
+    activeChat: string | null,
+    conversation: ConversationType
+  ) => {
+    return activeChat == conversation?.id ? "bg-white" : "bg-gray-100";
+  };
+
   return (
     <div className="w-full md:w-1/3 border-r bg-gray-50 dark:bg-gray-950">
       <div className="p-4 border-b">
@@ -27,7 +59,7 @@ export default function ConversationList({
           <h2 className="text-lg font-semibold">Messages</h2>
           <div className="">
             <NewChatDialog
-              createNewConversation={createNewConversation}
+              createNewConversation={fetchOrCreateConversation}
               trigger={
                 <>
                   <Plus />
@@ -39,32 +71,33 @@ export default function ConversationList({
         </div>
       </div>
       <div className="overflow-y-auto h-[calc(100%-60px)]">
-        {conversations?.map((conversation) => (
+        {conversations?.map((conversation: ConversationType) => (
           <div
-            key={conversation.id}
-            className={`flex items-center p-3 border-b cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-900 ${
-              activeChat === conversation.id
-                ? "bg-gray-100 dark:bg-gray-900"
-                : ""
-            }`}
-            onClick={() => onSelectChat(conversation.id)}
+            key={conversation?.id}
+            className={`flex items-center p-3 border-b cursor-pointer hover:bg-gray-50 ${isActiveChat(
+              activeChat,
+              conversation
+            )}`}
+            onClick={() => onSelectChat(conversation?.id)}
           >
-            <PieAvatar participants={conversation.participants} />
+            <PieAvatar participants={conversation?.participants ?? []} />
 
             <div className="ml-3 flex-1 min-w-0">
               <p className="font-medium truncate">
-                {conversation.participants
-                  .map((p) => p.display_name)
-                  .join(", ")}
+                {getParticipantsName(conversation)}
               </p>
-              <p className="text-xs text-gray-500">
-                {conversation.created_at &&
-                  `${new Date(
-                    conversation.created_at
-                  ).toDateString()} ${new Date(
-                    conversation.created_at
-                  ).toLocaleTimeString()}`}
-              </p>
+              <div className="flex items-center justify-between">
+                <div
+                  className={`text-xs truncate max-w-[calc(100%_-_85px)] ${
+                    isNewMessage(conversation) ? "font-bold" : ""
+                  }`}
+                >
+                  {getMessage(conversation)?.content ?? "No Message"}
+                </div>
+                <p className="text-xs text-[11px] text-gray-500">
+                  {getMessageTime(conversation)}
+                </p>
+              </div>
             </div>
           </div>
         ))}

@@ -26,9 +26,10 @@ class Message(models.Model):
         Conversation, on_delete=models.CASCADE, related_name="messages"
     )
     sender = models.ForeignKey(User, on_delete=models.CASCADE)
-    content = models.TextField(blank=True)  # optional for call events
+    content = models.TextField(blank=True)
     message_type = models.CharField(
         max_length=20, choices=MESSAGE_TYPES, default="text"
     )
+    is_read = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
     metadata = models.JSONField(blank=True, null=True)

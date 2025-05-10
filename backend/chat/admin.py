@@ -1,5 +1,7 @@
 from chat.models import Conversation, Message
 from django.contrib import admin
 
-admin.site.register(Conversation)
-admin.site.register(Message)
+from backend.admin import BaseModelAdmin
+
+admin.site.register(Conversation, BaseModelAdmin)
+admin.site.register(Message, BaseModelAdmin)

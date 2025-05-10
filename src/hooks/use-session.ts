@@ -5,15 +5,7 @@ const EXPIRY_KEY = "jwtTokenExpiry";
 const USER_KEY = "jwtUser";
 const EXPIRY_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
-export type SessionType = {
-  user?: {
-    name?: string;
-    email?: string;
-    image?: string;
-  };
-  token?: string;
-  expiry?: number;
-} | null;
+import { SessionType } from "@/schemas";
 
 export const useSession = () => {
   const [session, setSession] = useState<SessionType>(() => {

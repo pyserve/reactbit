@@ -92,3 +92,54 @@ export interface RichTextEditorProps {
   /** Use editor options */
   useEditorOptions?: UseEditorOptions;
 }
+
+export type fetchOrCreateConversationType = (participants: UserType[]) => void;
+
+export type handleSendMessageType = ({
+  message: string,
+  sender: UserType,
+}) => Promise<void>;
+
+export type MessageType = {
+  id: number;
+  content: string;
+  sender: UserType;
+  timestamp: string;
+  is_read: boolean;
+};
+
+export type ConversationType = {
+  id: string;
+  image?: string;
+  participants: UserType[];
+  created_at: string;
+  messages: MessageType[];
+};
+
+export type PieAvatarProps = {
+  participants: UserType[];
+  size?: number;
+};
+
+export type QueryParam = {
+  key: string;
+  value: string | number | boolean | null | undefined;
+  operator?: "=" | "!=" | ">" | "<" | ">=" | "<=";
+};
+
+export type DataType = {
+  model: string;
+  query?: QueryParam[];
+};
+
+export type SessionType = {
+  user?: {
+    id: number;
+    name?: string;
+    email?: string;
+    image?: string;
+    username: string;
+  };
+  token?: string;
+  expiry?: number;
+} | null;

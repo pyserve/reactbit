@@ -7,66 +7,67 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { UserType } from "@/schemas";
+import { extractDate } from "@/lib/utils";
+import { handleSendMessageType, SessionType } from "@/schemas";
 import { ArrowLeft, MoreVertical, Send, Video } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ConversationSelector from "./conversation-selector";
 import PieAvatar from "./pie-avatar";
 
-export type ConversationType =
-  | {
-      id: number;
-      image?: string;
-      participants: {
-        display_name: string;
-        username?: string;
-        email?: string;
-      }[];
-    }
-  | undefined;
-
-export type ChatWindowProps = {
-  conversation: ConversationType;
-  createNewConversation: (participants: UserType[]) => void;
-  messages: { id: number; text: string; sender: string; timestamp: string }[];
-  message: string;
-  setMessage: (msg: string) => void;
-  onSendMessage: (data: { message: string; sender: UserType }) => void;
-  isMobile: boolean;
-  onBack: () => void;
-  session: any;
-};
+import {
+  ConversationType,
+  fetchOrCreateConversationType,
+  MessageType,
+} from "@/schemas";
+import toast from "react-hot-toast";
 
 export default function ChatWindow({
   conversation,
-  createNewConversation,
+  fetchOrCreateConversation,
   messages,
   message,
   setMessage,
-  onSendMessage,
+  handleSendMessage,
   isMobile,
   onBack,
   session,
-}: ChatWindowProps) {
-  const [socket, setSocket] = useState<WebSocket | null>(null);
+}: {
+  conversation: ConversationType | null;
+  fetchOrCreateConversation: fetchOrCreateConversationType;
+  messages: MessageType[];
+  message: string;
+  setMessage: (msg: string) => void;
+  handleSendMessage: handleSendMessageType;
+  isMobile: boolean;
+  onBack: () => void;
+  session: SessionType;
+}) {
   const [typing, setTyping] = useState<boolean | null>(null);
+  const socket = useRef<WebSocket | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (conversation) {
-      const chatSocket = new WebSocket(
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, typing]);
+
+  useEffect(() => {
+    if (socket.current) {
+      socket.current.close();
+      socket.current = null;
+    }
+    if (conversation && !socket.current) {
+      socket.current = new WebSocket(
         `ws://127.0.0.1:8000/ws/chat/${conversation?.id}/?token=${session.token}`
       );
-      setSocket(chatSocket);
     }
-    return () => setSocket(null);
   }, [conversation]);
 
   useEffect(() => {
-    if (socket) {
-      socket.onmessage = function (e) {
+    if (socket.current) {
+      socket.current.onmessage = function (e) {
         const data = JSON.parse(e.data);
         if (data.message && data.sender) {
-          onSendMessage(data);
+          handleSendMessage(data);
         }
         if (
           data.typing !== undefined &&
@@ -76,44 +77,41 @@ export default function ChatWindow({
         }
       };
 
-      socket.onclose = function () {
-        console.error("Chat socket closed unexpectedly");
+      socket.current.onclose = function () {
+        console.info(`Chat socket with id-${conversation?.id} closed.`);
       };
     }
-  }, [socket, session.user]);
+  }, [socket.current]);
 
+  const sendSocketMessage = (data: any) => {
+    if (socket.current?.readyState === WebSocket.OPEN) {
+      socket.current.send(JSON.stringify(data));
+    } else {
+      socket.current?.addEventListener("open", () => {
+        socket.current?.send(JSON.stringify(data));
+      });
+    }
+  };
   const handleSubmitChat = () => {
-    socket?.send(
-      JSON.stringify({
-        message: message,
-      })
-    );
+    sendSocketMessage({ message });
   };
 
   const handleTyping = () => {
-    socket?.send(
-      JSON.stringify({
-        typing: true,
-        sender: session?.user?.username,
-      })
-    );
+    sendSocketMessage({
+      typing: true,
+      sender: session?.user?.username,
+    });
     setTimeout(() => {
-      socket?.send(
-        JSON.stringify({
-          typing: false,
-          sender: session?.user?.username,
-        })
-      );
+      sendSocketMessage({
+        typing: false,
+        sender: session?.user?.username,
+      });
     }, 2000);
   };
 
   if (!conversation) {
     return (
-      <ConversationSelector
-        createNewConversation={createNewConversation}
-        followers={session?.user?.followers}
-        following={session?.user?.following}
-      />
+      <ConversationSelector createNewConversation={fetchOrCreateConversation} />
     );
   }
 
@@ -135,7 +133,10 @@ export default function ChatWindow({
 
           <div className="ms-3">
             <h2 className="font-semibold">
-              {conversation.participants.map((p) => p.display_name).join(", ")}
+              {conversation?.participants
+                ?.filter((u) => u?.id !== session?.user?.id)
+                .map((p) => p.display_name)
+                .join(", ")}
             </h2>
             <p className="text-xs text-gray-500">
               @
@@ -145,7 +146,13 @@ export default function ChatWindow({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() =>
+              toast("Not available, this feature is coming soon...")
+            }
+          >
             <Video className="h-5 w-5" />
           </Button>
           <DropdownMenu>
@@ -184,9 +191,9 @@ export default function ChatWindow({
                   : "bg-gray-200 dark:bg-gray-800"
               }`}
             >
-              <p>{msg.text}</p>
+              <p className="break-words whitespace-pre-wrap">{msg.content}</p>
               <p className="text-xs text-gray-500 mt-1 text-right">
-                {msg.timestamp}
+                {extractDate(msg.timestamp)}
               </p>
             </div>
           </div>
@@ -198,6 +205,7 @@ export default function ChatWindow({
             </div>
           </div>
         )}
+        <div ref={messagesEndRef} />
       </div>
 
       <div className="p-4 border-t">

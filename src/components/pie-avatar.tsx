@@ -1,33 +1,65 @@
+import { getSession } from "@/hooks/use-session";
+import { colors } from "@/lib/data";
+import { PieAvatarProps } from "@/schemas";
 import React from "react";
 
-type PieAvatarProps = {
-  participants: { display_name: string }[];
-  size?: number;
-};
-
-const colors = [
-  "#93C5FD", // blue-300
-  "#F9A8D4", // pink-300
-  "#86EFAC", // green-300
-  "#FCD34D", // yellow-300
-  "#D8B4FE", // purple-300
-  "#FDE68A", // amber-300
-  "#67E8F9", // cyan-300
-  "#F0ABFC", // fuchsia-300
-  "#A5B4FC", // indigo-300
-  "#7DD3FC", // sky-300
-];
-
 const PieAvatar: React.FC<PieAvatarProps> = ({ participants, size = 40 }) => {
+  const session = getSession();
   const radius = size / 2;
-  const num = participants.length;
+
+  const otherParticipants = participants.filter(
+    (p) => p.id !== session?.user?.id
+  );
+
+  // ✅ Case: Two participants → show the other user's avatar
+  if (participants.length === 2 && otherParticipants.length === 1) {
+    const other = otherParticipants[0];
+
+    if (other.image) {
+      return (
+        <img
+          src={other.image}
+          alt={other.display_name || "User"}
+          width={size}
+          height={size}
+          style={{ borderRadius: "50%" }}
+        />
+      );
+    }
+
+    const letter =
+      other.display_name?.trim()?.[0]?.toUpperCase() ??
+      other.first_name?.[0]?.toUpperCase() ??
+      "?";
+
+    return (
+      <div
+        style={{
+          width: size,
+          height: size,
+          borderRadius: "50%",
+          backgroundColor: colors[0],
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: size * 0.5,
+          color: "white",
+          fontWeight: "bold",
+        }}
+      >
+        {letter}
+      </div>
+    );
+  }
+
+  // ✅ Case: Group chat → draw pie-style avatar
   const letters = participants.map(
     (p) => p.display_name?.trim()?.[0]?.toUpperCase() ?? "?"
   );
 
   const pieSlices = letters.map((letter, index) => {
-    const startAngle = (index / num) * 360;
-    const endAngle = ((index + 1) / num) * 360;
+    const startAngle = (index / participants.length) * 360;
+    const endAngle = ((index + 1) / participants.length) * 360;
     const largeArc = endAngle - startAngle > 180 ? 1 : 0;
 
     const startX = radius + radius * Math.cos((Math.PI * startAngle) / 180);
@@ -35,16 +67,16 @@ const PieAvatar: React.FC<PieAvatarProps> = ({ participants, size = 40 }) => {
     const endX = radius + radius * Math.cos((Math.PI * endAngle) / 180);
     const endY = radius + radius * Math.sin((Math.PI * endAngle) / 180);
 
+    const textAngle = (startAngle + endAngle) / 2;
+    const textX = radius + radius * 0.6 * Math.cos((Math.PI * textAngle) / 180);
+    const textY = radius + radius * 0.6 * Math.sin((Math.PI * textAngle) / 180);
+
     const pathData = `
       M ${radius} ${radius}
       L ${startX} ${startY}
       A ${radius} ${radius} 0 ${largeArc} 1 ${endX} ${endY}
       Z
     `;
-
-    const textAngle = (startAngle + endAngle) / 2;
-    const textX = radius + radius * 0.6 * Math.cos((Math.PI * textAngle) / 180);
-    const textY = radius + radius * 0.6 * Math.sin((Math.PI * textAngle) / 180);
 
     return (
       <g key={index}>
