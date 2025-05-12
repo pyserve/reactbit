@@ -18,6 +18,13 @@ def get_conversation_participants(conversation_id):
     return participants
 
 
+@database_sync_to_async
+def read_message(message_id):
+    message = Message.objects.get(pk=message_id)
+    message.is_read = True
+    message.save()
+
+
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.conversation_id = self.scope["url_route"]["kwargs"]["room_id"]
@@ -34,7 +41,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         message = data.get("message")
         typing = data.get("typing")
+        read_all = data.get("read_all")
 
+        participants = await get_conversation_participants(self.conversation_id)
         if message:
             user_info = await get_user_data(self.user)
             await self.channel_layer.group_send(
@@ -45,7 +54,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "sender": user_info,
                 },
             )
-            participants = await get_conversation_participants(self.conversation_id)
             for user in participants:
                 await self.channel_layer.group_send(
                     f"user_{user}", {"type": "conversation_update", "data": data}
@@ -58,6 +66,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "type": "user_typing",
                     "typing": typing,
                     "user": await get_user_data(self.user),
+                },
+            )
+
+        if read_all:
+            message_id = data.get("message_id")
+            await self.channel_layer.group_send(
+                self.group_name,
+                {
+                    "type": "read_message",
+                    "message_id": message_id,
+                    "participants": participants,
                 },
             )
 
@@ -80,6 +99,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 {
                     "typing": event["typing"],
                     "user": event["user"],
+                }
+            )
+        )
+
+    async def read_message(self, event):
+        message_id = event["message_id"]
+        participants = event["participants"]
+        await read_message(message_id)
+        for user in participants:
+            await self.channel_layer.group_send(
+                f"user_{user}", {"type": "conversation_update", "data": message_id}
+            )
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "read_all": True,
                 }
             )
         )

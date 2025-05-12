@@ -1,13 +1,20 @@
+import uuid
+from datetime import timedelta
+
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, Permission
 from django.db import models
-from django.db.models import Count
+from django.utils import timezone
 
 
 class User(AbstractUser):
-    display_name = models.CharField(max_length=100)
+    display_name = models.CharField(max_length=100, null=True, blank=True)
     dob = models.DateField(blank=True, null=True)
     image = models.FileField(upload_to="profiles/", null=True, blank=True)
+    cover = models.FileField(upload_to="covers/", null=True, blank=True)
+    bio = models.TextField(null=True, blank=True)
+    address = models.CharField(max_length=255, null=True, blank=True)
+    website = models.URLField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     groups = models.ManyToManyField(
@@ -37,13 +44,23 @@ class User(AbstractUser):
         )
         return users
 
-    def get_suggestions(self):
+    def get_friends_of_friends(self):
         following = self.following.all()
         return (
             User.objects.filter(followers__in=following)
             .exclude(id__in=following.values_list("id", flat=True))
             .exclude(id=self.id)
             .distinct()
+        )
+
+    def get_suggestions(self):
+        following = self.following.all()
+        followers = self.followers.all()
+
+        return (
+            User.objects.exclude(id__in=following.values_list("id", flat=True))
+            .exclude(id__in=followers.values_list("id", flat=True))
+            .exclude(id=self.id)
         )
 
     def save(self, *args, **kwargs):
@@ -66,3 +83,15 @@ class Group(models.Model):
     def has_permission(self, perm_codename: str) -> bool:
         """Check if any user in the group has a specific permission"""
         return self.permissions.filter(codename=perm_codename).exists()
+
+
+class PasswordResetToken(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="reset_tokens"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(default=timezone.now() + timedelta(days=3))
+
+    def is_expired(self):
+        return timezone.now() > self.expires_at

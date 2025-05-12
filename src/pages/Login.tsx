@@ -22,7 +22,7 @@ export default function Login() {
         <div className="mt-4 text-center text-sm">
           Don&apos;t have an account?{" "}
           <Link
-            to="/register"
+            to="/signup"
             className="font-medium text-primary underline-offset-4 hover:underline"
           >
             Sign up

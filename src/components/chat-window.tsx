@@ -46,6 +46,9 @@ export default function ChatWindow({
   const socket = useRef<WebSocket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const getMessage = (conversation: ConversationType) =>
+    conversation?.messages?.at(-1);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, typing]);
@@ -57,8 +60,17 @@ export default function ChatWindow({
     }
     if (conversation && !socket.current) {
       socket.current = new WebSocket(
-        `ws://127.0.0.1:8000/ws/chat/${conversation?.id}/?token=${session.token}`
+        `ws://127.0.0.1:8000/ws/chat/${conversation?.id}/?token=${session?.token}`
       );
+      const last_message = getMessage(conversation);
+      const isReciepent = session?.user?.id !== last_message?.sender?.id;
+
+      if (last_message && isReciepent) {
+        sendSocketMessage({
+          read_all: true,
+          message_id: getMessage(conversation)?.id,
+        });
+      }
     }
   }, [conversation]);
 
@@ -66,6 +78,7 @@ export default function ChatWindow({
     if (socket.current) {
       socket.current.onmessage = function (e) {
         const data = JSON.parse(e.data);
+        console.log("🚀 ~ Socket ~ received data:", data);
         if (data.message && data.sender) {
           handleSendMessage(data);
         }

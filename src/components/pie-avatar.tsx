@@ -1,17 +1,19 @@
-import { getSession } from "@/hooks/use-session";
 import { colors } from "@/lib/data";
+import { useSessionStore } from "@/lib/sessionStore";
 import { PieAvatarProps } from "@/schemas";
 import React from "react";
 
 const PieAvatar: React.FC<PieAvatarProps> = ({ participants, size = 40 }) => {
-  const session = getSession();
+  console.log("🚀 ~ participants:", participants);
+  const session = useSessionStore((state) => state.session);
+
   const radius = size / 2;
 
   const otherParticipants = participants.filter(
     (p) => p.id !== session?.user?.id
   );
 
-  // ✅ Case: Two participants → show the other user's avatar
+  // Case: Two participants → show the other user's avatar
   if (participants.length === 2 && otherParticipants.length === 1) {
     const other = otherParticipants[0];
 
@@ -52,7 +54,7 @@ const PieAvatar: React.FC<PieAvatarProps> = ({ participants, size = 40 }) => {
     );
   }
 
-  // ✅ Case: Group chat → draw pie-style avatar
+  // Case: Group chat → draw pie-style avatar
   const letters = participants.map(
     (p) => p.display_name?.trim()?.[0]?.toUpperCase() ?? "?"
   );

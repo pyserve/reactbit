@@ -1,55 +1,91 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, UserPlus } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useConnectUser } from "@/hooks/connect-user";
+import { useFetchRecords } from "@/hooks/fetch-records";
+import { useSessionStore } from "@/lib/sessionStore";
+import { Loader2, MessageSquare, UserPlus } from "lucide-react";
+import { useState } from "react";
+import toast from "react-hot-toast";
+import { Link, useNavigate } from "react-router-dom";
+import FriendCardSkeleton from "./skeletons/friend-card-skeletons";
+import UserAvatar from "./user-avatar";
 
 export default function FriendCard({
-  user,
+  userId,
   actionType,
-  onAction,
   isMobile,
 }: {
-  user: Record<string, any>;
+  userId: number;
   actionType: string;
-  onAction: () => void;
   isMobile: boolean;
 }) {
+  const [IsLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const connectUser = useConnectUser();
+  const session = useSessionStore((state) => state.session);
+  const setSession = useSessionStore((state) => state.setSession);
+  const { data: user, isFetched } = useFetchRecords({
+    model: "User",
+    query: [
+      {
+        key: "id",
+        operator: "=",
+        value: userId,
+      },
+    ],
+  });
 
   const handleMessageClick = () => {
-    navigate(`/chat/${user.id}`);
+    navigate(`/chat/${userId}`);
   };
+
+  const onAction = async () => {
+    if (!session) return;
+    setIsLoading(true);
+    let message = "";
+    if (actionType === "follow") {
+      message = "You have successfully followed this user!";
+    } else if (actionType === "unfollow") {
+      message = "You have successfully unfollowed this user?.";
+    }
+    try {
+      const updatedUser = await connectUser.mutateAsync({
+        current: session?.user,
+        other: user?.[0],
+        actionType,
+      });
+      setSession(session.token, updatedUser);
+      toast.success(message);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (!isFetched) return <FriendCardSkeleton isMobile={isMobile} />;
 
   return (
     <div className="flex flex-col gap-4 rounded-lg border border-gray-200 dark:border-gray-800 p-3 transition-colors hover:bg-gray-50 dark:hover:bg-gray-950">
       <div className="flex items-center gap-3 min-w-0">
-        <Avatar className="border border-gray-200 dark:border-gray-800 h-10 w-10">
-          <AvatarImage
-            src={user?.avatar || "/placeholder.svg"}
-            alt={user.display_name}
-          />
-          <AvatarFallback className="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-            {user.display_name?.charAt(0)}
-            {user.display_name?.split(" ")[1]?.charAt(0)}
-          </AvatarFallback>
-        </Avatar>
+        <UserAvatar user={user?.[0]} />
         <div className="min-w-0">
-          <a
-            href={`/profile/${user.username}`}
+          <Link
+            to={`/profile/${user?.[0]?.username}`}
             className="font-medium hover:underline text-black dark:text-white truncate block"
           >
-            {(user?.first_name ?? "User") + " " + user?.last_name}
-          </a>
+            {(user?.[0]?.first_name ?? "User") + " " + user?.[0]?.last_name}
+          </Link>
           <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-            @{user.email}
+            {user?.[0]?.email ||
+              (user?.[0]?.username ? `@${user?.[0]?.username}` : null)}
           </p>
         </div>
       </div>
       <div className="flex items-center gap-2">
         <Button
-          size={isMobile ? "sm" : "default"}
+          size={isMobile ? "sm" : "sm"}
           variant="outline"
           onClick={handleMessageClick}
           className="border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-900 flex-shrink-0"
@@ -67,7 +103,13 @@ export default function FriendCard({
             onClick={onAction}
             className="border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-900 flex-shrink-0"
           >
-            <UserPlus className={`${isMobile ? "h-4 w-4" : "mr-2 h-4 w-4"}`} />
+            {IsLoading ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <UserPlus
+                className={`${isMobile ? "h-4 w-4" : "mr-2 h-4 w-4"}`}
+              />
+            )}
             {!isMobile && "Follow"}
           </Button>
         )}
@@ -78,6 +120,7 @@ export default function FriendCard({
             onClick={onAction}
             className="border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-900 flex-shrink-0"
           >
+            {IsLoading ? <Loader2 /> : ""}
             {isMobile ? "Unfollow" : "Unfollow"}
           </Button>
         )}

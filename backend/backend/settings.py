@@ -11,12 +11,14 @@ ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     "daphne",
+    "dj_rest_auth",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",
     "chat.apps.ChatConfig",
     "video.apps.VideoConfig",
     "djauth.apps.DjauthConfig",
@@ -25,8 +27,17 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "django_filters",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "dj_rest_auth.registration",
+    "allauth.socialaccount.providers.google",
 ]
 
+SITE_ID = 1
+
+FRONTEND_URL = "http://localhost:5173"
+BACKEND_URL = "http://localhost:8000"
 AUTH_USER_MODEL = "djauth.User"
 
 CORS_ALLOW_ALL_ORIGINS = True
@@ -36,6 +47,14 @@ CHANNEL_LAYERS = {
         "BACKEND": "channels.layers.InMemoryChannelLayer",
     },
 }
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "anil.d@ecohome.group"
+EMAIL_HOST_PASSWORD = "kdam ymop satf kdym"
+DEFAULT_FROM_EMAIL = "anil.d@ecohome.group"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -55,6 +74,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = "backend.urls"

@@ -7,11 +7,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { getSession } from "@/hooks/use-session";
+import { useFetchRecords } from "@/hooks/fetch-records";
+import { useSessionStore } from "@/lib/sessionStore";
 import { fetchOrCreateConversationType, UserType } from "@/schemas";
-import { MessageCircleHeart } from "lucide-react";
 import { ReactElement, useState } from "react";
+import { FaFacebookMessenger } from "react-icons/fa";
 import PieAvatar from "./pie-avatar";
+import { UserListSkeleton } from "./skeletons/user-list-skeletion";
 import { Button } from "./ui/button";
 
 export default function NewChatDialog({
@@ -21,21 +23,29 @@ export default function NewChatDialog({
   createNewConversation: fetchOrCreateConversationType;
   trigger?: ReactElement;
 }) {
-  const session = getSession();
+  const session = useSessionStore((state) => state.session);
+
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const followers = session?.user?.followers;
-  const following = session?.user?.following;
-  const users = Array.from(
-    new Map(
-      [...followers, ...following].map((user) => [user.id, user])
-    ).values()
-  );
+  const followers = session?.user?.followers ?? [];
+  const following = session?.user?.following ?? [];
+  const { data: users } = useFetchRecords({
+    model: "User",
+    query: [
+      {
+        key: "id__in",
+        operator: "=",
+        value: [...followers, ...following].join(","),
+      },
+    ],
+  });
 
   const handleStartChat = (participants: UserType[]) => {
     createNewConversation(participants);
     setDialogOpen(false);
   };
+
+  if (!session) return <UserListSkeleton />;
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -57,33 +67,35 @@ export default function NewChatDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-2 max-h-64 overflow-y-auto">
-          {users.map((user) => (
-            <div
-              key={user?.id}
-              className="flex items-center justify-between border p-2 rounded"
-            >
-              <div className="flex items-center">
-                <div className="mr-2">
-                  <PieAvatar participants={[user, session.user]} />
-                </div>
-                <div>
-                  <div className="font-semibold">{user?.username}</div>
-                  <div className="text-sm text-muted-foreground">
-                    {user?.email}
+          {users
+            ?.filter((id: number) => id !== session?.user.id)
+            ?.map((user: UserType) => (
+              <div
+                key={user?.id}
+                className="flex items-center justify-between border p-2 rounded"
+              >
+                <div className="flex items-center">
+                  <div className="mr-2">
+                    <PieAvatar participants={[user, session.user]} />
+                  </div>
+                  <div>
+                    <div className="font-semibold">{user?.username}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {user?.email}
+                    </div>
                   </div>
                 </div>
+                <Button
+                  type="button"
+                  className="bg-blue-500 text-white"
+                  variant="outline"
+                  onClick={() => handleStartChat([user, session.user])}
+                >
+                  <FaFacebookMessenger />
+                  Message
+                </Button>
               </div>
-              <Button
-                type="button"
-                className="bg-blue-500 text-white"
-                variant="outline"
-                onClick={() => handleStartChat([user, session.user])}
-              >
-                <MessageCircleHeart />
-                Message
-              </Button>
-            </div>
-          ))}
+            ))}
         </div>
         <DialogFooter />
       </DialogContent>

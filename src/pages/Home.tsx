@@ -1,16 +1,16 @@
 import ConnectionCard from "@/components/connection-card";
 import { CreatePostForm } from "@/components/create-post-form";
 import Header from "@/components/nav-header";
-import PostCard from "@/components/post-card";
+import PostList from "@/components/post-list";
 import { Button } from "@/components/ui/button";
 import { useFetchRecords } from "@/hooks/fetch-records";
-import { getSession } from "@/hooks/use-session";
-import { PostType } from "@/schemas";
+import { useSessionStore } from "@/lib/sessionStore";
 import { RefreshCw } from "lucide-react";
 import { useState } from "react";
 
 export default function Home() {
-  const session = getSession();
+  const session = useSessionStore((state) => state.session);
+
   const { data: posts } = useFetchRecords({
     model: "Post",
     query: [
@@ -30,7 +30,8 @@ export default function Home() {
         <div className="flex flex-col gap-4 mb-6">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold capitalize">
-              Welcome, {session?.user?.username || "User"}
+              Welcome,{" "}
+              {session?.user?.display_name || session?.user?.username || "User"}
             </h1>
             <Button
               variant="outline"
@@ -52,23 +53,21 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-12 lg:gap-8">
-          <div className="lg:col-span-7 xl:col-span-8 space-y-6">
+        <div className="grid gap-2 lg:gap-4 grid-cols-1 lg:grid-cols-12">
+          <div className="col-span-12 lg:col-span-8 space-y-6">
             <CreatePostForm />
 
-            <div className="space-y-6">
-              {posts?.map((post: PostType) => (
-                <PostCard key={post.id} post={post} />
-              ))}
-            </div>
+            <PostList posts={posts} />
           </div>
 
-          <ConnectionCard
-            followers={session?.user?.followers}
-            following={session?.user?.following}
-            suggestions={session?.user?.suggestions}
-            IsLoading={IsLoading}
-          />
+          <div className="col-span-12 lg:col-span-4">
+            <ConnectionCard
+              followers={session?.user?.followers ?? []}
+              following={session?.user?.following ?? []}
+              suggestions={session?.user?.suggestions ?? []}
+              IsLoading={IsLoading}
+            />
+          </div>
         </div>
       </main>
     </div>

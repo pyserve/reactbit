@@ -5,7 +5,7 @@ import Header from "@/components/nav-header";
 import { useCreateRecord } from "@/hooks/create-record";
 import { useFetchRecords } from "@/hooks/fetch-records";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { getSession } from "@/hooks/use-session";
+import { useSessionStore } from "@/lib/sessionStore";
 import { ConversationType, handleSendMessageType, UserType } from "@/schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
@@ -19,7 +19,8 @@ dayjs.extend(utc);
 
 export default function ChatPage() {
   const { id } = useParams<{ id: string }>();
-  const session = getSession();
+  const session = useSessionStore((state) => state.session);
+
   const createRecord = useCreateRecord();
   const queryClient = useQueryClient();
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -34,7 +35,7 @@ export default function ChatPage() {
     useState<ConversationType | null>(null);
 
   useEffect(() => {
-    if (session.user && !socket.current) {
+    if (session?.user && !socket.current) {
       socket.current = new WebSocket(
         `ws://127.0.0.1:8000/ws/conversation/${session.user?.id}/?token=${session.token}`
       );

@@ -2,7 +2,7 @@ import { Plus } from "lucide-react";
 import NewChatDialog from "./new-chat-dialog";
 import PieAvatar from "./pie-avatar";
 
-import { getSession } from "@/hooks/use-session";
+import { useSessionStore } from "@/lib/sessionStore";
 import { extractDate } from "@/lib/utils";
 import { ConversationType, fetchOrCreateConversationType } from "@/schemas";
 
@@ -17,12 +17,12 @@ export default function ConversationList({
   activeChat: string | null;
   onSelectChat: (id: string) => void;
 }) {
-  const session = getSession();
+  const session = useSessionStore((state) => state.session);
 
   const getParticipantsName = (conversation: ConversationType) => {
     return conversation?.participants
-      ?.filter((u) => u?.id !== session.user?.id)
-      .map((p) => p.display_name)
+      ?.filter((u) => u?.id !== session?.user?.id)
+      .map((p) => p.display_name || p.username)
       .join(", ");
   };
 
@@ -42,7 +42,12 @@ export default function ConversationList({
 
   const isNewMessage = (conversation: ConversationType) => {
     const last_message = conversation?.messages?.at(-1);
-    return last_message && !last_message?.is_read;
+    return (
+      last_message?.conversation !== activeChat &&
+      last_message?.sender?.id !== session?.user?.id &&
+      last_message &&
+      !last_message?.is_read
+    );
   };
 
   const isActiveChat = (

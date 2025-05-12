@@ -8,10 +8,10 @@ type SimpleUserType = {
 
 type UserType = {
   id: number;
-  mutual_follows: SimpleUserType[];
-  suggestions: SimpleUserType[];
-  followers: SimpleUserType[];
-  following: SimpleUserType[];
+  mutual_follows: number[];
+  suggestions: number[];
+  followers: number[];
+  following: number[];
   password: string;
   last_login: string | null;
   is_superuser: boolean;
@@ -29,6 +29,10 @@ type UserType = {
   updated_at: string;
   groups: any[];
   user_permissions: any[];
+  bio: string;
+  website: string;
+  cover: string;
+  address: string;
 };
 
 type PostType = {
@@ -47,7 +51,10 @@ type PostType = {
   comments: string[];
   isLiked: boolean;
   isBookmarked: boolean;
-  images: string[];
+  images: {
+    id: number;
+    file: string;
+  }[];
 };
 
 export interface RichTextEditorProps {
@@ -106,6 +113,7 @@ export type MessageType = {
   sender: UserType;
   timestamp: string;
   is_read: boolean;
+  conversation: string;
 };
 
 export type ConversationType = {
@@ -143,3 +151,8 @@ export type SessionType = {
   token?: string;
   expiry?: number;
 } | null;
+
+export type PostImageType = {
+  id: number;
+  file: string;
+};

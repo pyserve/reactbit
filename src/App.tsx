@@ -1,17 +1,22 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-import { getSession } from "./hooks/use-session";
+import { useSessionStore } from "./lib/sessionStore";
 import ChatPage from "./pages/Chat";
+import ForgotPasswordPage from "./pages/ForgotPassword";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import ProfilePage from "./pages/Profile";
+import SignUp from "./pages/Register";
+import ResetPasswordConfirm from "./pages/ResetPasswordConfirm";
 import SettingsPage from "./pages/Settings";
 
 export default function App() {
-  const session = getSession();
-  console.log("🚀 ~ App ~ session:", session);
+  const initializeSession = useSessionStore((state) => state.initializeSession);
+  const session = useSessionStore((state) => state.session);
 
-  // if (!session) return <Navigate to={"/login"} />;
+  useEffect(() => {
+    initializeSession();
+  }, [initializeSession]);
 
   return (
     <React.Fragment>
@@ -21,13 +26,18 @@ export default function App() {
             <Route path="/chat/:id" element={<ChatPage />} />
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/profile/:username" element={<ProfilePage />} />
-            <Route path="/profile" element={<ProfilePage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="*" element={<Home />} />
           </>
         ) : (
           <>
             <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route
+              path="/reset-password/:token"
+              element={<ResetPasswordConfirm />}
+            />
             <Route path="*" element={<Navigate to={"/login"} />} />
           </>
         )}

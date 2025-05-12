@@ -5,18 +5,28 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getSession, useSession } from "@/hooks/use-session";
-import { BellIcon, LogOut, Settings, User } from "lucide-react";
+import { useSessionStore } from "@/lib/sessionStore";
+import {
+  BellIcon,
+  CheckCircle2,
+  Inbox,
+  LogOut,
+  Settings,
+  User,
+} from "lucide-react";
+import { FaFacebookMessenger } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import pkg from "../../package.json";
 import UserAvatar from "./user-avatar";
 
 export default function Header() {
-  const session = getSession();
-  const { clearSession } = useSession();
+  const session = useSessionStore((state) => state.session);
+  const clearSession = useSessionStore((state) => state.clearSession);
+
   const navigate = useNavigate();
 
   const logout = () => {
@@ -37,16 +47,51 @@ export default function Header() {
             </div>
           </div>
 
-          <div className="hidden sm:ml-6 sm:flex sm:items-center">
+          <div className="hidden sm:ml-6 sm:flex sm:items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="flex items-center px-1 py-0 rounded-full"
+                  className="flex items-center px-0 py-0 rounded-full bg-gray-100"
+                  onClick={() => navigate("/chat/")}
                 >
-                  <BellIcon />
+                  <FaFacebookMessenger />
                 </Button>
               </DropdownMenuTrigger>
+            </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="flex items-center px-0 py-0 rounded-full bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-0"
+                >
+                  <BellIcon className="w-5 h-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                <DropdownMenuLabel className="font-semibold">
+                  Notifications
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="cursor-pointer">
+                  <Inbox className="mr-2 h-4 w-4 text-blue-500" />
+                  New message from John
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer">
+                  <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" />
+                  Task completed
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => {
+                    // Navigate to notifications/settings
+                  }}
+                  className="cursor-pointer"
+                >
+                  <Settings className="mr-2 h-4 w-4" />
+                  Notification Settings
+                </DropdownMenuItem>
+              </DropdownMenuContent>
             </DropdownMenu>
 
             {session?.user ? (
@@ -54,9 +99,11 @@ export default function Header() {
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="flex items-center px-1 py-0 rounded-full"
+                    className="flex items-center px-0 py-0 rounded-full"
                   >
-                    <UserAvatar />
+                    <div tabIndex={-1}>
+                      <UserAvatar />
+                    </div>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
@@ -68,13 +115,15 @@ export default function Header() {
                   <DropdownMenuItem className="border-b">
                     <div className="flex flex-col">
                       <div className="capitalize font-bold">
-                        {session?.user?.username}
+                        {session?.user?.display_name || session?.user?.username}
                       </div>
                       <div className="text-xs">{session?.user?.email}</div>
                     </div>
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => navigate("/profile")}
+                    onClick={() =>
+                      navigate(`/profile/${session?.user?.username}`)
+                    }
                     className="cursor-pointer"
                   >
                     <User className="mr-2 h-4 w-4" />

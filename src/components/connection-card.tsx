@@ -9,8 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { getSession } from "@/hooks/use-session";
-import { UserType } from "@/schemas";
+import { useSessionStore } from "@/lib/sessionStore";
 import { RefreshCw, Users } from "lucide-react";
 import { useState } from "react";
 
@@ -20,13 +19,14 @@ export default function ConnectionCard({
   suggestions,
   IsLoading,
 }: {
-  followers: UserType[];
-  following: UserType[];
-  suggestions: UserType[];
+  followers: number[];
+  following: number[];
+  suggestions: number[];
   IsLoading: boolean;
 }) {
   const [search, setSearch] = useState("");
-  const session = getSession();
+  const session = useSessionStore((state) => state.session);
+
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   return (
@@ -38,14 +38,14 @@ export default function ConnectionCard({
             className="data-[state=active]:bg-white dark:data-[state=active]:bg-black"
           >
             <Users className="mr-2 h-4 w-4" />
-            Following ({followers.length})
+            Following ({following?.length})
           </TabsTrigger>
           <TabsTrigger
             value="followers"
             className="data-[state=active]:bg-white dark:data-[state=active]:bg-black"
           >
             <Users className="mr-2 h-4 w-4" />
-            Followers ({following.length})
+            Followers ({followers?.length})
           </TabsTrigger>
         </TabsList>
         <TabsContent value="following" className="mt-4">
@@ -61,14 +61,13 @@ export default function ConnectionCard({
                 <div className="flex justify-center py-8">
                   <RefreshCw className="h-8 w-8 animate-spin text-gray-400" />
                 </div>
-              ) : following.length > 0 ? (
+              ) : following?.length > 0 ? (
                 <div className="space-y-4">
-                  {following.map((user: UserType) => (
+                  {following.map((userId: number) => (
                     <FriendCard
-                      key={user.id}
-                      user={user}
+                      key={userId}
+                      userId={userId}
                       actionType="unfollow"
-                      onAction={() => null}
                       isMobile={isMobile}
                     />
                   ))}
@@ -103,20 +102,19 @@ export default function ConnectionCard({
                 <div className="flex justify-center py-8">
                   <RefreshCw className="h-8 w-8 animate-spin text-gray-400" />
                 </div>
-              ) : followers.length > 0 ? (
+              ) : followers?.length > 0 ? (
                 <div className="space-y-4">
-                  {followers.map((user: UserType) => (
+                  {followers.map((userId: number) => (
                     <FriendCard
-                      key={user.id}
-                      user={user}
+                      key={userId}
+                      userId={userId}
                       actionType={
                         session?.user?.following?.some(
-                          (f: UserType) => f.id === user.id
+                          (f: number) => f === userId
                         )
                           ? "following"
                           : "follow"
                       }
-                      onAction={() => null}
                       isMobile={isMobile}
                     />
                   ))}
@@ -148,14 +146,13 @@ export default function ConnectionCard({
             <div className="flex justify-center py-8">
               <RefreshCw className="h-8 w-8 animate-spin text-gray-400" />
             </div>
-          ) : suggestions.length > 0 ? (
+          ) : suggestions?.length > 0 ? (
             <div className="space-y-4">
-              {suggestions.map((user: UserType) => (
+              {suggestions.map((userId: number) => (
                 <FriendCard
-                  key={user.id}
-                  user={user}
+                  key={userId}
+                  userId={userId}
                   actionType="follow"
-                  onAction={() => null}
                   isMobile={isMobile}
                 />
               ))}
