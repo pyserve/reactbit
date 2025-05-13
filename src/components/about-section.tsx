@@ -14,6 +14,8 @@ import {
   User,
 } from "lucide-react";
 import { useState } from "react";
+import { EditProfileForm } from "./edit-profile-form";
+import { Dialog, DialogTrigger } from "./ui/dialog";
 
 export default function AboutSection({ user }: { user: UserType }) {
   const [isHovering, setIsHovering] = useState<string | null>(null);
@@ -28,13 +30,18 @@ export default function AboutSection({ user }: { user: UserType }) {
               About {user?.first_name || user?.username || user?.email}
             </CardTitle>
           </div>
-          <Button
-            variant="outline"
-            className="rounded-md transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
-          >
-            <Edit className="" />
-            Edit Profile
-          </Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                variant="outline"
+                className="border-gray-200 dark:border-gray-800 text-sm"
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                Edit Profile
+              </Button>
+            </DialogTrigger>
+            <EditProfileForm user={user} />
+          </Dialog>
         </CardHeader>
         <CardContent className="p-0">
           <div className="divide-y divide-gray-100 dark:divide-gray-800">

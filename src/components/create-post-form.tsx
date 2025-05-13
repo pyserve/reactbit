@@ -27,6 +27,36 @@ export const CreatePostForm = () => {
   const [editorKey, setEditorKey] = useState(0);
   const queryClient = useQueryClient();
 
+  const customImage = Image.extend({
+    addNodeView() {
+      return ({ node }) => {
+        const src = node.attrs.src;
+        const alt = node.attrs.alt || "";
+
+        const img = document.createElement("img");
+        img.src = src;
+        img.alt = alt;
+        img.style.maxWidth = "100%";
+        img.style.height = "auto";
+
+        return {
+          dom: img,
+          async destroy() {
+            const image = postImages.current.find((img) => img.file === src);
+            postImages.current = postImages.current.filter(
+              (img) => img.file !== src
+            );
+            if (image) {
+              console.log("🚀 ~ destroy ~ image:", image);
+              const res = await api.delete(`/post_images/${image.id}/`);
+              console.log("🚀 ~ destroy ~ res:", res);
+            }
+          },
+        };
+      };
+    },
+  });
+
   const extensions = [
     BaseKit.configure({
       placeholder: {
@@ -43,7 +73,7 @@ export const CreatePostForm = () => {
     Table,
     History,
     Mention,
-    Image.configure({
+    customImage.configure({
       upload: async (files: File) => {
         console.log("🚀 ~ upload: ~ files:", files);
         const formData = new FormData();

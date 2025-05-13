@@ -24,8 +24,8 @@ export default function UserCard({ users }: { users: number[] }) {
   return (
     <div className="grid grid-cols-3 items-center gap-4">
       {fetchedUsers
-        .filter((u: UserType) => u.id !== session?.user?.id)
-        .map((user: UserType) => {
+        ?.filter((u: UserType) => u.id !== session?.user?.id)
+        ?.map((user: UserType) => {
           return (
             <Card
               key={user.id}

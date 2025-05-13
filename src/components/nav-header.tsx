@@ -31,7 +31,7 @@ export default function Header() {
 
   const logout = () => {
     clearSession();
-    window.location.reload();
+    navigate("/");
   };
 
   return (

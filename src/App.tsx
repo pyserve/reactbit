@@ -38,7 +38,7 @@ export default function App() {
               path="/reset-password/:token"
               element={<ResetPasswordConfirm />}
             />
-            <Route path="*" element={<Navigate to={"/login"} />} />
+            <Route path="/" element={<Navigate to={"/login"} />} />
           </>
         )}
       </Routes>

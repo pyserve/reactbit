@@ -1,8 +1,11 @@
 import AboutSection from "@/components/about-section";
+import CoverPhoto from "@/components/cover-image";
+import { EditProfileForm } from "@/components/edit-profile-form";
 import Header from "@/components/nav-header";
 import PostList from "@/components/post-list";
 import PostsSidebar from "@/components/post-sidebar";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserAvatar from "@/components/user-avatar";
 import UserCard from "@/components/user-card";
@@ -24,7 +27,6 @@ import { useParams } from "react-router-dom";
 export default function ProfilePage() {
   const { username } = useParams();
   const [activeTab, setActiveTab] = useState();
-  console.log("🚀 ~ ProfilePage ~ username:", username);
   const session = useSessionStore((state) => state.session);
   const { data: users } = useFetchRecords({
     model: "User",
@@ -52,18 +54,19 @@ export default function ProfilePage() {
       <div className="relative">
         {/* Cover Image */}
         <div className="h-48 md:h-64 w-full bg-gray-200 dark:bg-gray-800 overflow-hidden">
-          <img
+          {/* <img
             src={user?.cover || "/placeholder.svg"}
             alt="Cover"
             className="w-full h-full object-cover"
-          />
+          /> */}
+          <CoverPhoto user={user} />
         </div>
 
         {/* Profile Header */}
         <div className="container max-w-6xl mx-auto px-4">
           <div className="relative -mt-16 sm:-mt-20 mb-4 flex flex-col sm:flex-row sm:items-end sm:justify-between">
             <div className="flex flex-col sm:flex-row sm:items-end">
-              <UserAvatar user={user} />
+              <UserAvatar user={user} size={125} />
 
               {/* User Info */}
               <div className="mt-4 sm:mt-0 sm:ml-4 mb-2">
@@ -77,13 +80,18 @@ export default function ProfilePage() {
             {/* Action Buttons */}
             <div className="mt-4 sm:mt-0 flex space-x-2">
               {isCurrentUser ? (
-                <Button
-                  variant="outline"
-                  className="border-gray-200 dark:border-gray-800"
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit Profile
-                </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="border-gray-200 dark:border-gray-800"
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit Profile
+                    </Button>
+                  </DialogTrigger>
+                  <EditProfileForm user={user} />
+                </Dialog>
               ) : (
                 <>
                   <Button

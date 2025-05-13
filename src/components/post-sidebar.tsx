@@ -102,8 +102,8 @@ export default function PostsSidebar({ posts }: { posts: PostType[] }) {
         </CardHeader>
         <Separator />
         <CardContent className="">
-          {posts.length === 0 ||
-          (posts.length > 0 && postImages?.length === 0) ? (
+          {posts?.length === 0 ||
+          (posts?.length > 0 && postImages?.length === 0) ? (
             <div className="flex justify-center">No Images or Videos.</div>
           ) : (
             <div className="space-y-3 grid grid-cols-2 gap-2">
