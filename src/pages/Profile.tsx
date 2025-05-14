@@ -4,10 +4,10 @@ import { EditProfileForm } from "@/components/edit-profile-form";
 import Header from "@/components/nav-header";
 import PostList from "@/components/post-list";
 import PostsSidebar from "@/components/post-sidebar";
+import ProfileImage from "@/components/profile-image";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import UserAvatar from "@/components/user-avatar";
 import UserCard from "@/components/user-card";
 import { useFetchRecords } from "@/hooks/fetch-records";
 import { useSessionStore } from "@/lib/sessionStore";
@@ -52,30 +52,13 @@ export default function ProfilePage() {
       <Header />
 
       <div className="relative">
-        {/* Cover Image */}
         <div className="h-48 md:h-64 w-full bg-gray-200 dark:bg-gray-800 overflow-hidden">
-          {/* <img
-            src={user?.cover || "/placeholder.svg"}
-            alt="Cover"
-            className="w-full h-full object-cover"
-          /> */}
           <CoverPhoto user={user} />
         </div>
 
-        {/* Profile Header */}
         <div className="container max-w-6xl mx-auto px-4">
           <div className="relative -mt-16 sm:-mt-20 mb-4 flex flex-col sm:flex-row sm:items-end sm:justify-between">
-            <div className="flex flex-col sm:flex-row sm:items-end">
-              <UserAvatar user={user} size={125} />
-
-              {/* User Info */}
-              <div className="mt-4 sm:mt-0 sm:ml-4 mb-2">
-                <h1 className="text-2xl font-bold">{user?.username}</h1>
-                <p className="text-gray-500 dark:text-gray-400">
-                  @{user?.username}
-                </p>
-              </div>
-            </div>
+            <ProfileImage user={user} />
 
             {/* Action Buttons */}
             <div className="mt-4 sm:mt-0 flex space-x-2">

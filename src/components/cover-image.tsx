@@ -1,7 +1,9 @@
 import { getCroppedImg } from "@/lib/utils";
 import { UserType } from "@/schemas";
+import { Check, X } from "lucide-react";
 import { useRef, useState } from "react";
 import Cropper from "react-easy-crop";
+import { Button } from "./ui/button";
 
 const CoverPhoto = ({ user }: { user: UserType }) => {
   const [isEditingCover, setIsEditingCover] = useState(false);
@@ -17,6 +19,9 @@ const CoverPhoto = ({ user }: { user: UserType }) => {
     setFinalCover(newCoverUrl);
     setIsEditingCover(false);
     setTempImageUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,9 +44,9 @@ const CoverPhoto = ({ user }: { user: UserType }) => {
 
   return (
     <div>
-      <div className="relative" style={{ overflow: "visible" }}>
+      <div className="relative " style={{ overflow: "visible" }}>
         <div
-          className="h-48 md:h-64 w-full bg-gray-200 dark:bg-gray-800 overflow-hidden cursor-pointer"
+          className="relative h-48 md:h-64 w-full overflow-hidden cursor-pointer group"
           onClick={() => fileInputRef.current?.click()}
         >
           <img
@@ -49,6 +54,9 @@ const CoverPhoto = ({ user }: { user: UserType }) => {
             alt="Cover"
             className="w-full h-full object-cover"
           />
+          <div className="absolute top-0 w-[150px] h-[30px] bg-gray-800 bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <span className="text-white text-xs">Click to Edit Cover</span>
+          </div>
         </div>
 
         <input
@@ -60,7 +68,6 @@ const CoverPhoto = ({ user }: { user: UserType }) => {
         />
       </div>
 
-      {/* Cropper Modal */}
       {isEditingCover && tempImageUrl && (
         <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center">
           <div className="relative w-[90vw] h-[60vh] bg-white p-4 rounded shadow-md flex flex-col items-center">
@@ -69,7 +76,7 @@ const CoverPhoto = ({ user }: { user: UserType }) => {
                 image={tempImageUrl}
                 crop={crop}
                 zoom={zoom}
-                aspect={3 / 1} // Adjust aspect ratio if needed
+                aspect={3 / 1}
                 onCropChange={setCrop}
                 onZoomChange={setZoom}
                 onCropComplete={(_, croppedPixels) =>
@@ -78,21 +85,21 @@ const CoverPhoto = ({ user }: { user: UserType }) => {
               />
             </div>
             <div className="flex gap-4 mt-4">
-              <button
-                className="px-4 py-2 bg-blue-600 text-white rounded"
+              <Button
+                className="px-4 py-2 bg-green-600"
                 onClick={handleCropConfirm}
               >
-                Confirm
-              </button>
-              <button
-                className="px-4 py-2 bg-gray-400 text-white rounded"
+                <Check /> Confirm
+              </Button>
+              <Button
+                className="px-4 py-2"
                 onClick={() => {
                   setIsEditingCover(false);
                   setTempImageUrl(null);
                 }}
               >
-                Cancel
-              </button>
+                <X /> Cancel
+              </Button>
             </div>
           </div>
         </div>
