@@ -12,43 +12,87 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useConfirmDialog } from "@/hooks/async-alert-dialog";
 import { useFetchRecords } from "@/hooks/fetch-records";
+import { useLikePost, useSavedPost } from "@/hooks/post-engagement";
 import { api } from "@/lib/api";
+import { useSessionStore } from "@/lib/sessionStore";
 import { extractDate } from "@/lib/utils";
 import { PostType } from "@/schemas";
 import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  BookmarkIcon,
+  Bookmark,
+  BookmarkCheck,
   Edit,
   MessageCircle,
   MoreHorizontal,
   Share,
-  Share2,
-  ThumbsUp,
   Trash,
 } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { FaRegThumbsUp, FaThumbsUp } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import PostComments from "./post-comments";
+import SharePost from "./share-post";
 import PostCardSkeleton from "./skeletons/post-card-skeleton";
 import UserAvatar from "./user-avatar";
 
 export default function PostCard({ post }: { post: PostType }) {
+  const session = useSessionStore((s) => s.session);
   const { data: users } = useFetchRecords({
     model: "User",
-    query: [{ key: "id", operator: "=", value: post.user.toString() }],
+    query: [{ key: "id", operator: "=", value: post.user?.toString() }],
   });
+  const { data: reactions } = useFetchRecords({
+    model: "Post_Reaction",
+    query: [{ key: "post", operator: "=", value: post.id?.toString() }],
+  });
+  const { data: savedPosts } = useFetchRecords({
+    model: "Saved_Post",
+    query: [{ key: "post", operator: "=", value: post.id?.toString() }],
+  });
+  const { data: comments } = useFetchRecords({
+    model: "Post_Comment",
+    query: [{ key: "post", operator: "=", value: post?.id?.toString() }],
+  });
+
   const queryClient = useQueryClient();
   const user = users?.[0];
+  const isPostLiked = reactions?.some((r) => r.user === session?.user?.id);
+  const isPostSaved = savedPosts?.some((r) => r.user === session?.user?.id);
   const [open, setOpen] = useState(false);
   const { confirmDialog } = useConfirmDialog();
+  const likePost = useLikePost();
+  const savePost = useSavedPost();
 
-  const onLike = (postId: number) => {
+  const onPostLike = async (postId: number) => {
     console.log("🚀 ~ Home ~ postId:", postId);
+    try {
+      const res = await likePost.mutateAsync({
+        post: postId,
+        user: session?.user?.id,
+      });
+      if (res.detail) toast.success(res.detail);
+      else toast.success("Post liked!");
+      queryClient.invalidateQueries({ queryKey: ["Post_Reaction"] });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Error");
+    }
   };
 
-  const onBookmark = (postId: number) => {
+  const onSavedPost = async (postId: number) => {
     console.log("🚀 ~ Home ~ postId:", postId);
+    try {
+      const res = await savePost.mutateAsync({
+        post: postId,
+        user: session?.user?.id,
+      });
+      if (res.detail) toast.success(res.detail);
+      else toast.success("Post saved!");
+      queryClient.invalidateQueries({ queryKey: ["Saved_Post"] });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Error");
+    }
   };
 
   const handleDelete = async (postId: number) => {
@@ -67,7 +111,7 @@ export default function PostCard({ post }: { post: PostType }) {
   if (!post || !user) return <PostCardSkeleton />;
 
   return (
-    <Card className="border-gray-200 dark:border-gray-800 bg-white dark:bg-black overflow-hidden">
+    <Card className="border-gray-200 dark:border-gray-800 bg-white dark:bg-black overflow-hidden pb-0">
       <CardHeader className="pb-1">
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-3">
@@ -101,10 +145,7 @@ export default function PostCard({ post }: { post: PostType }) {
               <DropdownMenuItem>
                 <Share /> Share post
               </DropdownMenuItem>
-              <DropdownMenuItem
-                // onSelect={(e) => e.preventDefault()}
-                onClick={() => handleDelete(post.id)}
-              >
+              <DropdownMenuItem onClick={() => handleDelete(post.id)}>
                 <Trash /> Delete post
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -123,19 +164,23 @@ export default function PostCard({ post }: { post: PostType }) {
         )}
       </CardContent>
       <CardFooter className="border-t border-gray-100 dark:border-gray-900 pt-3 flex justify-between">
-        <div className="flex gap-4">
+        <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="sm"
             className={
-              post?.isLiked
-                ? "text-blue-600 dark:text-blue-400"
+              isPostLiked
+                ? "text-blue-600 font-bold dark:text-blue-400"
                 : "text-gray-500 dark:text-gray-400"
             }
-            onClick={() => onLike(post.id)}
+            onClick={() => onPostLike(post.id)}
           >
-            <ThumbsUp className="h-4 w-4 mr-1" />
-            {post.likes}
+            {isPostLiked ? (
+              <FaThumbsUp className="h-5 w-5 text-blue-500" />
+            ) : (
+              <FaRegThumbsUp className="h-5 w-5 text-gray-500" />
+            )}
+            <span>{reactions?.length}</span>
           </Button>
           <Button
             variant="ghost"
@@ -143,29 +188,28 @@ export default function PostCard({ post }: { post: PostType }) {
             className="text-gray-500 dark:text-gray-400"
           >
             <MessageCircle className="h-4 w-4 mr-1" />
-            {post?.comments}
+            {comments?.length}
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-gray-500 dark:text-gray-400"
-          >
-            <Share2 className="h-4 w-4 mr-1" />
-          </Button>
+          <SharePost postId={post?.id} />
         </div>
         <Button
           variant="ghost"
           size="sm"
           className={
-            post?.isBookmarked
+            isPostSaved
               ? "text-blue-600 dark:text-blue-400"
               : "text-gray-500 dark:text-gray-400"
           }
-          onClick={() => onBookmark(post.id)}
+          onClick={() => onSavedPost(post.id)}
         >
-          <BookmarkIcon className="h-4 w-4" />
+          {isPostSaved ? (
+            <BookmarkCheck className="h-4 w-4" />
+          ) : (
+            <Bookmark className="h-4 w-4" />
+          )}
         </Button>
       </CardFooter>
+      <PostComments postId={post?.id} />
     </Card>
   );
 }

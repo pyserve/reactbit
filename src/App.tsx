@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import { useSessionStore } from "./lib/sessionStore";
 import ChatPage from "./pages/Chat";
 import ForgotPasswordPage from "./pages/ForgotPassword";
@@ -31,6 +31,7 @@ export default function App() {
           </>
         ) : (
           <>
+            <Route path="/" element={<Login />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -38,7 +39,6 @@ export default function App() {
               path="/reset-password/:token"
               element={<ResetPasswordConfirm />}
             />
-            <Route path="/" element={<Navigate to={"/login"} />} />
           </>
         )}
       </Routes>

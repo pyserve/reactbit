@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { useConnectUser } from "@/hooks/connect-user";
 import { useFetchRecords } from "@/hooks/fetch-records";
 import { useSessionStore } from "@/lib/sessionStore";
-import { Loader2, MessageSquare, UserPlus } from "lucide-react";
+import { Loader2, UserMinus, UserPlus } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { FaFacebookMessenger } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import FriendCardSkeleton from "./skeletons/friend-card-skeletons";
 import UserAvatar from "./user-avatar";
@@ -90,9 +91,7 @@ export default function FriendCard({
           onClick={handleMessageClick}
           className="border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-900 flex-shrink-0"
         >
-          <MessageSquare
-            className={`${isMobile ? "h-4 w-4" : "mr-2 h-4 w-4"}`}
-          />
+          <FaFacebookMessenger />
           {!isMobile && "Message"}
         </Button>
 
@@ -121,7 +120,7 @@ export default function FriendCard({
             className="border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-900 flex-shrink-0"
           >
             {IsLoading ? <Loader2 /> : ""}
-            {isMobile ? "Unfollow" : "Unfollow"}
+            {isMobile ? <UserMinus /> : "Unfollow"}
           </Button>
         )}
         {actionType === "following" && (

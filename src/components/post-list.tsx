@@ -22,7 +22,7 @@ export default function PostList({ posts }: { posts: PostType[] }) {
           if (entry.isIntersecting) {
             setVisibility((prev) => {
               const newVisibility = [...prev];
-              newVisibility[index] = true; // Mark the post as visible
+              newVisibility[index] = true;
               return newVisibility;
             });
           }

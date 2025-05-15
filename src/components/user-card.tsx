@@ -1,7 +1,7 @@
 import { useFetchRecords } from "@/hooks/fetch-records";
 import { useSessionStore } from "@/lib/sessionStore";
 import { UserType } from "@/schemas";
-import { MessageCircle } from "lucide-react";
+import { FaFacebookMessenger } from "react-icons/fa";
 import PieAvatar from "./pie-avatar";
 import { Button } from "./ui/button";
 import {
@@ -51,7 +51,7 @@ export default function UserCard({ users }: { users: number[] }) {
                       variant={"secondary"}
                       className="w-full border border-gray-300"
                     >
-                      <MessageCircle />
+                      <FaFacebookMessenger />
                       <span>Start Chat</span>
                     </Button>
                   </a>

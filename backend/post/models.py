@@ -14,3 +14,64 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s Post {self.pk}"
+
+
+class PostReaction(models.Model):
+    REACTION_CHOICES = [
+        ("like", "Like"),
+        ("love", "Love"),
+        ("haha", "Haha"),
+        ("wow", "Wow"),
+        ("sad", "Sad"),
+        ("angry", "Angry"),
+    ]
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="reactions")
+    reaction_type = models.CharField(
+        max_length=10, choices=REACTION_CHOICES, default="like"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "post")
+
+
+class PostComment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    post = models.ForeignKey(
+        Post, on_delete=models.CASCADE, related_name="post_comments"
+    )
+    parent = models.ForeignKey(
+        "self", null=True, blank=True, on_delete=models.CASCADE, related_name="replies"
+    )
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+
+class SavedPost(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="saved_posts")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="saved_by")
+    saved_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "post")
+
+
+class SharedPost(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="shared_posts"
+    )
+    original_post = models.ForeignKey(
+        Post, on_delete=models.CASCADE, related_name="shared_by"
+    )
+    caption = models.TextField(blank=True, null=True)
+    shared_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "original_post")
