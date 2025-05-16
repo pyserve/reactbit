@@ -8,9 +8,12 @@ class PostImage(models.Model):
 
 class Post(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_posts")
-    caption = models.TextField()
+    caption = models.TextField(blank=True, null=True)
     likes = models.IntegerField(default=0)
     images = models.ManyToManyField(PostImage, blank=True)
+    original_post = models.ForeignKey(
+        "self", null=True, blank=True, on_delete=models.CASCADE, related_name="shares"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -61,17 +64,3 @@ class SavedPost(models.Model):
 
     class Meta:
         unique_together = ("user", "post")
-
-
-class SharedPost(models.Model):
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="shared_posts"
-    )
-    original_post = models.ForeignKey(
-        Post, on_delete=models.CASCADE, related_name="shared_by"
-    )
-    caption = models.TextField(blank=True, null=True)
-    shared_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ("user", "original_post")

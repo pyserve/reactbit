@@ -9,6 +9,8 @@ class PostImageSerializer(serializers.ModelSerializer):
 
 
 class PostSerializer(serializers.ModelSerializer):
+    images = PostImageSerializer(many=True, read_only=True)
+
     class Meta:
         model = models.Post
         fields = "__all__"
@@ -29,10 +31,4 @@ class PostCommentSerializer(serializers.ModelSerializer):
 class SavedPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.SavedPost
-        fields = "__all__"
-
-
-class SharedPostSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.SharedPost
         fields = "__all__"

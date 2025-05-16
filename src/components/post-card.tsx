@@ -6,9 +6,17 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useConfirmDialog } from "@/hooks/async-alert-dialog";
 import { useFetchRecords } from "@/hooks/fetch-records";
@@ -17,7 +25,6 @@ import { api } from "@/lib/api";
 import { useSessionStore } from "@/lib/sessionStore";
 import { extractDate } from "@/lib/utils";
 import { PostType } from "@/schemas";
-import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Bookmark,
@@ -25,13 +32,13 @@ import {
   Edit,
   MessageCircle,
   MoreHorizontal,
-  Share,
   Trash,
 } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { FaRegThumbsUp, FaThumbsUp } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { CreatePostForm } from "./create-post-form";
 import PostComments from "./post-comments";
 import SharePost from "./share-post";
 import PostCardSkeleton from "./skeletons/post-card-skeleton";
@@ -39,6 +46,7 @@ import UserAvatar from "./user-avatar";
 
 export default function PostCard({ post }: { post: PostType }) {
   const session = useSessionStore((s) => s.session);
+  const [editPost, setEditPost] = useState(false);
   const { data: users } = useFetchRecords({
     model: "User",
     query: [{ key: "id", operator: "=", value: post.user?.toString() }],
@@ -55,15 +63,29 @@ export default function PostCard({ post }: { post: PostType }) {
     model: "Post_Comment",
     query: [{ key: "post", operator: "=", value: post?.id?.toString() }],
   });
+  const { data: original_posts } = useFetchRecords({
+    model: "Post",
+    query: [
+      { key: "id", operator: "=", value: post?.original_post?.toString() },
+    ],
+  });
 
   const queryClient = useQueryClient();
   const user = users?.[0];
-  const isPostLiked = reactions?.some((r) => r.user === session?.user?.id);
-  const isPostSaved = savedPosts?.some((r) => r.user === session?.user?.id);
+  const isPostLiked = reactions?.some((r: any) => r.user === session?.user?.id);
+  const isPostSaved = savedPosts?.some(
+    (r: any) => r.user === session?.user?.id
+  );
   const [open, setOpen] = useState(false);
   const { confirmDialog } = useConfirmDialog();
   const likePost = useLikePost();
   const savePost = useSavedPost();
+
+  const openDialog = () => {
+    setTimeout(() => {
+      setEditPost(true);
+    }, 100);
+  };
 
   const onPostLike = async (postId: number) => {
     console.log("🚀 ~ Home ~ postId:", postId);
@@ -126,30 +148,49 @@ export default function PostCard({ post }: { post: PostType }) {
             </div>
           </div>
 
-          <DropdownMenu open={open} onOpenChange={setOpen}>
-            <DropdownMenuTrigger>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-              >
-                <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">More options</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>
-                <Edit /> Edit post
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Share /> Share post
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleDelete(post.id)}>
-                <Trash /> Delete post
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Dialog open={editPost} onOpenChange={setEditPost}>
+            <DialogContent className="">
+              <DialogHeader>
+                <DialogTitle className="flex gap-2 items-center">
+                  <Edit />
+                  <span>Edit post</span>
+                </DialogTitle>
+                <DialogDescription>
+                  Make changes to your post here. Click update when you're done.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4 max-h-[75vh] overflow-y-auto">
+                <CreatePostForm
+                  post={post}
+                  onSuccess={() => setEditPost(false)}
+                />
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {session?.user?.id === user?.id && (
+            <DropdownMenu open={open} onOpenChange={setOpen}>
+              <DropdownMenuTrigger>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                  <span className="sr-only">More options</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => openDialog()}>
+                  <Edit /> Edit post
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleDelete(post.id)}>
+                  <Trash /> Delete post
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </CardHeader>
       <CardContent className="pb-1">
@@ -157,11 +198,10 @@ export default function PostCard({ post }: { post: PostType }) {
           className="mb-1 text-sm text-justify"
           dangerouslySetInnerHTML={{ __html: post.caption }}
         ></p>
-        {post.images.length && (
-          <div className="rounded-md overflow-hidden mt-3 border border-gray-200 dark:border-gray-800">
-            <img src={post.images?.[0]?.file} className="w-[100%]" />
-          </div>
-        )}
+        <p
+          className="border-t border-gray-200 py-2 mb-1 text-sm text-justify"
+          dangerouslySetInnerHTML={{ __html: original_posts?.[0]?.caption }}
+        ></p>
       </CardContent>
       <CardFooter className="border-t border-gray-100 dark:border-gray-900 pt-3 flex justify-between">
         <div className="flex items-center gap-3">

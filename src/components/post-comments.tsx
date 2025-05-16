@@ -75,15 +75,19 @@ const PostComments = ({ postId }: { postId: number }) => {
       </CardContent>
 
       <CardContent className="overflow-y-auto max-h-100 relative p-0">
-        <CardTitle className="sticky top-0 bg-white p-2 px-4 z-1 flex items-center gap-2 pt-0 border-b border-gray-50">
-          <MessageCircle size={20} /> Post Comments
-        </CardTitle>
+        {comments?.length > 0 && (
+          <CardTitle className="sticky top-0 bg-white p-2 px-4 z-1 flex items-center gap-2 pt-0 border-b border-gray-50">
+            <MessageCircle size={20} /> Post Comments
+          </CardTitle>
+        )}
         <div className="space-y-4 p-4">
           {comments?.map((comment: any) => (
             <PostCommentCard key={comment.id} comment={comment} />
           ))}
           {comments?.length === 0 && (
-            <p className="text-sm text-gray-500">No comments yet.</p>
+            <p className="flex justify-center text-sm  text-gray-500">
+              No comments yet. Be the first to share your thoughts!
+            </p>
           )}
         </div>
       </CardContent>

@@ -1,7 +1,9 @@
 import { api } from "@/lib/api";
 import { useSessionStore } from "@/lib/sessionStore";
+import { PostType } from "@/schemas";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import DOMPurify from "dompurify";
+import { Edit3, Loader2 } from "lucide-react";
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 import "react-image-crop/dist/ReactCrop.css";
@@ -17,13 +19,32 @@ import "reactjs-tiptap-editor/style.css";
 import { Table } from "reactjs-tiptap-editor/table";
 import { Button } from "./ui/button";
 
-const DEFAULT = "";
+const cleanHtml = (html: string) => {
+  let cleaned = DOMPurify.sanitize(html);
+  cleaned = cleaned.replace(/<p>(<br\s*\/?>|\s|&nbsp;)*<\/p>/gi, "");
+  return cleaned.trim();
+};
 
-export const CreatePostForm = () => {
-  const [content, setContent] = useState(DEFAULT);
+export const CreatePostForm = ({
+  post,
+  onSuccess,
+}: {
+  post?: PostType;
+  onSuccess?: () => void;
+}) => {
+  const isEdit = !!post;
+  const [content, setContent] = useState(
+    post?.caption ? cleanHtml(post.caption) : ""
+  );
   const [IsLoading, setIsLoading] = useState(false);
   const session = useSessionStore((s) => s.session);
-  const postImages = useRef<{ id: number; file: string }[]>([]);
+
+  const postImages = useRef<{ id: number; file: string }[]>(
+    post?.images?.map((img) => ({
+      id: img?.id,
+      file: img?.file,
+    })) ?? []
+  );
   const [editorKey, setEditorKey] = useState(0);
   const queryClient = useQueryClient();
 
@@ -91,38 +112,45 @@ export const CreatePostForm = () => {
     }),
   ];
 
+  const isHtmlStringEffectivelyEmpty = (html: string): boolean => {
+    const fragment = document.createRange().createContextualFragment(html);
+    const hasContent =
+      fragment.querySelector("img, video, iframe, svg, canvas, audio") !==
+        null ||
+      (fragment.textContent && fragment.textContent.trim() !== "");
+    return !hasContent;
+  };
+
   const SubmitPost = async () => {
     setIsLoading(true);
-    console.log("🚀 ~ CreatePostForm ~ content:", { content, postImages });
-    const isHtmlStringEffectivelyEmpty = (html: string): boolean => {
-      const fragment = document.createRange().createContextualFragment(html);
-      const text = fragment.textContent || "";
-      return (
-        text
-          .replace(/\u00A0/g, "")
-          .replace(/\s/g, "")
-          .trim().length === 0
-      );
-    };
-
+    console.log(content);
     try {
-      if (
+      const isEmpty =
         isHtmlStringEffectivelyEmpty(content) &&
-        postImages.current?.length == 0
-      ) {
-        throw new Error("Either text or image must be provided!");
-      }
-      const res = await api.post("/posts/", {
+        postImages.current.length === 0;
+      if (isEmpty) throw new Error("Either text or image must be provided!");
+
+      const payload = {
         user: session?.user?.id,
         caption: content,
         images: postImages.current.map((p) => p.id),
-      });
+      };
+
+      let res;
+      if (isEdit) {
+        res = await api.patch(`/posts/${post.id}/`, payload);
+      } else {
+        res = await api.post("/posts/", payload);
+      }
       console.log("🚀 ~ SubmitPost ~ res:", res);
-      setContent(DEFAULT);
+      toast.success(
+        isEdit ? "Post updated successfully!" : "Post created successfully!"
+      );
+      setContent("");
       postImages.current = [];
       setEditorKey((prev) => prev + 1);
-      toast.success("Post created sucessfully!");
       queryClient.invalidateQueries({ queryKey: ["Post"] });
+      onSuccess?.();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Error");
     } finally {
@@ -154,10 +182,16 @@ export const CreatePostForm = () => {
           {IsLoading ? (
             <div className="flex gap-2">
               <Loader2 className="animate-spin" />
-              <span>Creating Post..</span>
+              <span>{isEdit ? "Updating Post..." : "Creating Post..."}</span>
             </div>
+          ) : isEdit ? (
+            <span className="flex gap-2">
+              <Edit3 /> Update Post
+            </span>
           ) : (
-            "Create Post"
+            <span className="flex gap-2">
+              <Edit3 /> Create Post
+            </span>
           )}
         </Button>
       </div>

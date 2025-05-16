@@ -38,6 +38,7 @@ type UserType = {
 type PostType = {
   id: number;
   caption: string;
+  original_post: number;
   likes: number;
   created_at: string;
   updated_at: string;
@@ -51,10 +52,7 @@ type PostType = {
   comments: string[];
   isLiked: boolean;
   isBookmarked: boolean;
-  images: {
-    id: number;
-    file: string;
-  }[];
+  images: PostImageType[];
 };
 
 export interface RichTextEditorProps {

@@ -47,7 +47,7 @@ export const useSharedPost = () =>
     mutationFn: async (data: any) => {
       try {
         console.log("🚀 ~ mutationFn:async ~ data:", data);
-        const res = await api.post(`/shared_posts/`, data);
+        const res = await api.post(`/posts/`, data);
         return res.data;
       } catch (error) {
         throw new Error(error instanceof Error ? error.message : "Error");

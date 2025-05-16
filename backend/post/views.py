@@ -1,6 +1,6 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from post import models, serializers
-from post.filters import PostImageFilter
+from post.filters import PostFilter, PostImageFilter
 from rest_framework import status
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
@@ -13,10 +13,24 @@ class PostViewSet(ModelViewSet):
     serializer_class = serializers.PostSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, SearchFilter]
-    filterset_fields = ["user"]
+    filterset_class = PostFilter
 
     def get_queryset(self):
         return super().get_queryset().order_by("-created_at")
+
+    def create(self, request, *args, **kwargs):
+        original_post = request.data.get("original_post", None)
+        user = request.data.get("user", None)
+
+        if original_post:
+            shared_post = models.Post.objects.filter(
+                original_post=original_post, user=user
+            ).first()
+            if shared_post:
+                shared_post.delete()
+                return Response({"detail": "Post unshared."}, status=status.HTTP_200_OK)
+
+        return super().create(request, *args, **kwargs)
 
 
 class PostImageViewSet(ModelViewSet):
@@ -80,32 +94,5 @@ class SavedPostViewSet(ModelViewSet):
         if saved_post:
             saved_post.delete()
             return Response({"detail": "Post unsaved."}, status=status.HTTP_200_OK)
-
-        return super().create(request, *args, **kwargs)
-
-
-class SharedPostViewSet(ModelViewSet):
-    queryset = models.SharedPost.objects.all()
-    serializer_class = serializers.SharedPostSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
-    filter_backends = [DjangoFilterBackend, SearchFilter]
-    filterset_fields = ["user", "original_post"]
-
-    def create(self, request, *args, **kwargs):
-        original_post = request.data.get("original_post", None)
-        user = request.data.get("user", None)
-
-        if not original_post or not user:
-            return Response(
-                {"detail": "Post and user are required."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        shared_post = models.SharedPost.objects.filter(
-            original_post=original_post, user=user
-        ).first()
-        if shared_post:
-            shared_post.delete()
-            return Response({"detail": "Post unshared."}, status=status.HTTP_200_OK)
 
         return super().create(request, *args, **kwargs)

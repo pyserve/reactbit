@@ -15,12 +15,19 @@ export default function Home() {
     model: "Post",
     query: [
       {
-        key: "user",
-        value: session?.user?.id,
+        key: "user__in",
         operator: "=",
+        value: [
+          session?.user?.id,
+          ...(session?.user?.followers ?? []),
+          ...(session?.user?.following ?? []),
+        ]
+          .filter(Boolean)
+          .join(","),
       },
     ],
   });
+
   const [IsLoading, setIsLoading] = useState(false);
 
   return (
@@ -46,9 +53,8 @@ export default function Home() {
               className="border-gray-200 dark:border-gray-800"
             >
               <RefreshCw
-                className={`h-4 w-4 mr-2 ${IsLoading ? "animate-spin" : ""}`}
+                className={`h-4 w-4 ${IsLoading ? "animate-spin" : ""}`}
               />
-              Refresh
             </Button>
           </div>
         </div>

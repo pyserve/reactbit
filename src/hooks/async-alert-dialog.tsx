@@ -71,18 +71,10 @@ export const AsyncAlertContextProvider = ({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <Button
-              // onSelect={(e) => e.preventDefault()}
-              variant={"secondary"}
-              onClick={handleCancel}
-            >
+            <Button variant={"secondary"} onClick={handleCancel}>
               Cancel
             </Button>
-            <Button
-              // onSelect={(e) => e.preventDefault()}
-              variant={"default"}
-              onClick={handleConfirm}
-            >
+            <Button variant={"default"} onClick={handleConfirm}>
               Continue
             </Button>
           </AlertDialogFooter>

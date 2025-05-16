@@ -7,6 +7,7 @@ import {
 import { useConfirmDialog } from "@/hooks/async-alert-dialog";
 import { useFetchRecords } from "@/hooks/fetch-records";
 import { api } from "@/lib/api";
+import { useSessionStore } from "@/lib/sessionStore";
 import { extractDate } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { Edit, MoreVertical, Trash } from "lucide-react";
@@ -20,7 +21,8 @@ import UserAvatar from "./user-avatar";
 export default function PostCommentCard({ comment }: { comment: any }) {
   const queryClient = useQueryClient();
   const { confirmDialog } = useConfirmDialog();
-  const [IsEditing, SetIsEditing] = useState(false);
+  const session = useSessionStore((s) => s.session);
+  const [IsEditing, setIsEditing] = useState(false);
   const [editedComment, setEditedComment] = useState(comment?.text);
   const { data: users } = useFetchRecords({
     model: "User",
@@ -51,7 +53,7 @@ export default function PostCommentCard({ comment }: { comment: any }) {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Error");
     } finally {
-      SetIsEditing(false);
+      setIsEditing(false);
     }
   };
 
@@ -74,24 +76,26 @@ export default function PostCommentCard({ comment }: { comment: any }) {
               </div>
             </div>
 
-            <div className="">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="p-1 rounded hover:bg-gray-100">
-                    <MoreVertical className="w-4 h-4 text-gray-500" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => SetIsEditing(true)}>
-                    <Edit className="mr-2 h-4 w-4" /> Edit
-                  </DropdownMenuItem>
+            {session?.user?.id === user?.id && (
+              <div className="">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="p-1 rounded hover:bg-gray-100">
+                      <MoreVertical className="w-4 h-4 text-gray-500" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                      <Edit className="mr-2 h-4 w-4" /> Edit
+                    </DropdownMenuItem>
 
-                  <DropdownMenuItem onClick={DeleteComment}>
-                    <Trash className="mr-2 h-4 w-4" /> Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+                    <DropdownMenuItem onClick={DeleteComment}>
+                      <Trash className="mr-2 h-4 w-4" /> Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
           </div>
           <div className="mt-1 text-sm">
             {IsEditing ? (
@@ -100,7 +104,15 @@ export default function PostCommentCard({ comment }: { comment: any }) {
                   value={editedComment}
                   onChange={(e) => setEditedComment(e.target.value)}
                 ></Textarea>
-                <div className="flex justify-end">
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    variant={"ghost"}
+                    onClick={() => setIsEditing(false)}
+                    size={"sm"}
+                    className="bg-red-400 text-gray-900"
+                  >
+                    Cancel
+                  </Button>
                   <Button onClick={EditComment} size={"sm"}>
                     Post
                   </Button>

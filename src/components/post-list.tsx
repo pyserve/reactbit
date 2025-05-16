@@ -1,7 +1,9 @@
 import { PostType } from "@/schemas";
+import { Newspaper } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import PostCard from "./post-card";
 import PostCardSkeleton from "./skeletons/post-card-skeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 
 export default function PostList({ posts }: { posts: PostType[] }) {
   const [visibility, setVisibility] = useState<boolean[]>(
@@ -34,14 +36,13 @@ export default function PostList({ posts }: { posts: PostType[] }) {
       }
     );
 
-    posts?.forEach((post, index) => {
+    posts?.forEach((post) => {
       const element = document.getElementById(`postElement-${post.id}`);
       if (element) {
         observerRef.current?.observe(element);
       }
     });
 
-    // Cleanup observer
     return () => {
       if (observerRef.current) {
         posts?.forEach((post) => {
@@ -56,6 +57,18 @@ export default function PostList({ posts }: { posts: PostType[] }) {
 
   return (
     <div className="space-y-6">
+      {!posts?.length && (
+        <Card className="mt-4">
+          <CardHeader>
+            <CardTitle className="flex gap-2 items-center">
+              <Newspaper /> No Posts Yet
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>Create a post to see here!</p>
+          </CardContent>
+        </Card>
+      )}
       {posts?.map((post, index) => (
         <div key={post.id} id={`postElement-${post.id}`}>
           {visibility[index] ? <PostCard post={post} /> : <PostCardSkeleton />}
