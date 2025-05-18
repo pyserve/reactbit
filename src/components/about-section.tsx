@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TabsContent } from "@/components/ui/tabs";
+import { useSessionStore } from "@/lib/sessionStore";
 import { formatDateTime } from "@/lib/utils";
 import { UserType } from "@/schemas";
 import {
@@ -19,6 +20,7 @@ import { Dialog, DialogTrigger } from "./ui/dialog";
 
 export default function AboutSection({ user }: { user: UserType }) {
   const [isHovering, setIsHovering] = useState<string | null>(null);
+  const session = useSessionStore((s) => s.session);
 
   return (
     <TabsContent value="about" className="mt-6">
@@ -30,18 +32,20 @@ export default function AboutSection({ user }: { user: UserType }) {
               About {user?.first_name || user?.username || user?.email}
             </CardTitle>
           </div>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                variant="outline"
-                className="border-gray-200 dark:border-gray-800 text-sm"
-              >
-                <Edit className="h-4 w-4 mr-2" />
-                Edit Profile
-              </Button>
-            </DialogTrigger>
-            <EditProfileForm user={user} />
-          </Dialog>
+          {session?.user?.id === user?.id && (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="border-gray-200 dark:border-gray-800 text-sm"
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit Profile
+                </Button>
+              </DialogTrigger>
+              <EditProfileForm user={user} />
+            </Dialog>
+          )}
         </CardHeader>
         <CardContent className="p-0">
           <div className="divide-y divide-gray-100 dark:divide-gray-800">

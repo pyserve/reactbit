@@ -44,6 +44,7 @@ export default function SharePost({ postId }: { postId: number }) {
         original_post: postId,
         user: session?.user?.id,
         caption: newCaption,
+        is_shared: true,
       });
       if (res.detail) toast.success(res.detail);
       else toast.success("Post shared!");

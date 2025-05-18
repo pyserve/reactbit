@@ -40,6 +40,9 @@ type PostType = {
   caption: string;
   original_post: number;
   likes: number;
+  comments: number;
+  shared: number;
+  saved: number;
   created_at: string;
   updated_at: string;
   user: {
@@ -49,6 +52,7 @@ type PostType = {
     avatar: string;
     display_name: string;
   };
+  is_shared: boolean;
   comments: string[];
   isLiked: boolean;
   isBookmarked: boolean;
@@ -125,6 +129,7 @@ export type ConversationType = {
 export type PieAvatarProps = {
   participants: UserType[];
   size?: number;
+  username?: string;
 };
 
 export type QueryParam = {
@@ -136,6 +141,7 @@ export type QueryParam = {
 export type DataType = {
   model: string;
   query?: QueryParam[];
+  enabled?: boolean;
 };
 
 export type SessionType = {
@@ -154,3 +160,22 @@ export type PostImageType = {
   id: number;
   file: string;
 };
+
+export interface NotificationType {
+  id: number;
+  recipient: UserType;
+  sender: UserType;
+  notification_type:
+    | "post"
+    | "comment"
+    | "message"
+    | "like"
+    | "follow"
+    | "custom";
+  message: string;
+  content_type: number;
+  object_id: number;
+  content_object?: any;
+  is_read: boolean;
+  created_at: string;
+}

@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     "django.contrib.sites",
     "chat.apps.ChatConfig",
     "video.apps.VideoConfig",
+    "notification.apps.NotificationConfig",
     "djauth.apps.DjauthConfig",
     "post.apps.PostConfig",
     "corsheaders",

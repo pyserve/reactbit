@@ -12,6 +12,7 @@ from djauth.serializers import (
 )
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import (
     AllowAny,
@@ -35,6 +36,33 @@ class UserViewSet(ModelViewSet):
         if self.action == "create":
             return [AllowAny()]
         return [IsAuthenticatedOrReadOnly()]
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        password = request.data.get("new_password")
+        current_password = request.data.get("current_password")
+
+        if password:
+            if not current_password:
+                raise ValidationError(
+                    {
+                        "current_password": "Current password is required to change the password."
+                    }
+                )
+            if not instance.check_password(current_password):
+                raise ValidationError(
+                    {"current_password": "Current password does not match."}
+                )
+
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+
+        if password:
+            user.set_password(password)
+            user.save()
+
+        return Response(serializer.data)
 
     @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
     def me(self, request):

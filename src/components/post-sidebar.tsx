@@ -10,31 +10,31 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { useFetchRecords } from "@/hooks/fetch-records";
-import { PostImageType, PostType } from "@/schemas";
+import { useSessionStore } from "@/lib/sessionStore";
+import { PostImageType, PostType, UserType } from "@/schemas";
 import {
   BarChart2,
   Bookmark,
-  Clock,
   FileCode2Icon,
   Image,
   MessageSquare,
-  MoreVertical,
   PlusCircle,
+  Share2,
   ThumbsUp,
-  TrendingUp,
 } from "lucide-react";
 import { CreatePostForm } from "./create-post-form";
 
-export default function PostsSidebar({ posts }: { posts: PostType[] }) {
-  console.log("🚀 ~ PostsSidebar ~ posts:", posts);
+export default function PostsSidebar({
+  posts,
+  user,
+}: {
+  posts: PostType[];
+  user?: UserType;
+}) {
+  const session = useSessionStore((s) => s.session);
+
   const { data: postImages } = useFetchRecords({
     model: "Post_Image",
     query: [
@@ -48,69 +48,53 @@ export default function PostsSidebar({ posts }: { posts: PostType[] }) {
 
   return (
     <div className="space-y-4 sticky top-6">
-      <div className="">
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button className="w-full">
-              <PlusCircle className="h-4 w-4" />
-              Create New Post
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="w-full">
-            <DialogHeader className="">
-              <DialogTitle className="py-3 w-full flex items-center gap-2">
-                <FileCode2Icon />
-                <div>Create a Post</div>
-              </DialogTitle>
-              <DialogDescription>
-                <CreatePostForm />
-              </DialogDescription>
-            </DialogHeader>
-          </DialogContent>
-        </Dialog>
-      </div>
-      <Card className="border-gray-200 dark:border-gray-800 shadow-sm">
-        <CardHeader className="">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Image className="h-4 w-4 text-gray-500" />
-              Photos and Video
-            </CardTitle>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <span className="sr-only">Open menu</span>
-                  <MoreVertical />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem>
-                  <Clock className="mr-2 h-4 w-4" />
-                  <span>Most Recent</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <ThumbsUp className="mr-2 h-4 w-4" />
-                  <span>Most Liked</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <MessageSquare className="mr-2 h-4 w-4" />
-                  <span>Most Comments</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+      {session?.user?.id === user?.id && (
+        <div className="">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button className="w-full">
+                <PlusCircle className="h-4 w-4" />
+                Create New Post
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="w-full">
+              <DialogHeader className="">
+                <DialogTitle className="py-3 w-full flex items-center gap-2">
+                  <FileCode2Icon />
+                  <div>Create a Post</div>
+                </DialogTitle>
+                <DialogDescription>
+                  <CreatePostForm />
+                </DialogDescription>
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
+        </div>
+      )}
+      <Card className="border-gray-200 dark:border-gray-800 shadow-sm py-0 gap-3">
+        <CardHeader className="bg-gray-100 py-5">
+          <CardTitle className="text-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 font-bold">
+                <Image className="h-4 w-4 text-gray-500" />
+                <span>Media and Photos</span>
+              </div>
+            </div>
+          </CardTitle>
         </CardHeader>
-        <Separator />
-        <CardContent className="">
+        <CardContent>
           {posts?.length === 0 ||
           (posts?.length > 0 && postImages?.length === 0) ? (
-            <div className="flex justify-center">No Images or Videos.</div>
+            <div className="flex justify-center py-3">No Images or Videos.</div>
           ) : (
             <div className="space-y-3 grid grid-cols-2 gap-2">
               {postImages?.map((postImage: PostImageType) => {
                 return (
                   <div key={postImage.id} className="">
-                    <img src={postImage.file} className="w-full" />
+                    <img
+                      src={postImage.file}
+                      className="w-full h-25 object-cover bg-gray-50"
+                    />
                   </div>
                 );
               })}
@@ -119,15 +103,16 @@ export default function PostsSidebar({ posts }: { posts: PostType[] }) {
         </CardContent>
       </Card>
 
-      <Card className="border-gray-200 dark:border-gray-800 shadow-sm">
-        <CardHeader className="py-4 px-5">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <BarChart2 className="h-4 w-4 text-gray-500" />
-            Post Statistics
+      <Card className="border-gray-200 dark:border-gray-800 shadow-sm py-0 gap-3">
+        <CardHeader className="bg-gray-100 py-5">
+          <CardTitle className="text-sm">
+            <div className="flex items-center gap-2 font-bold">
+              <BarChart2 className="h-4 w-4 text-gray-500" />
+              <span>Post Statistics</span>
+            </div>
           </CardTitle>
         </CardHeader>
-        <Separator />
-        <CardContent className="p-4">
+        <CardContent className="px-4 py-2">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
@@ -144,11 +129,15 @@ export default function PostsSidebar({ posts }: { posts: PostType[] }) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                 <div className="h-8 w-8 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
-                  <TrendingUp className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />
+                  <Share2 className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />
                 </div>
-                <span>Total Views</span>
+                <span>Total Shares</span>
               </div>
-              <span className="font-semibold">{posts?.views}</span>
+              <span className="font-semibold">
+                {posts?.reduce((acc, cur: PostType) => {
+                  return acc + cur.shared;
+                }, 0)}
+              </span>
             </div>
 
             <div className="flex items-center justify-between">
@@ -158,7 +147,11 @@ export default function PostsSidebar({ posts }: { posts: PostType[] }) {
                 </div>
                 <span>Total Likes</span>
               </div>
-              <span className="font-semibold">{posts?.likes}</span>
+              <span className="font-semibold">
+                {posts?.reduce((acc, cur: PostType) => {
+                  return acc + cur.likes;
+                }, 0)}
+              </span>
             </div>
 
             <div className="flex items-center justify-between">
@@ -168,7 +161,11 @@ export default function PostsSidebar({ posts }: { posts: PostType[] }) {
                 </div>
                 <span>Comments</span>
               </div>
-              <span className="font-semibold">{posts?.comments}</span>
+              <span className="font-semibold">
+                {posts?.reduce((acc, cur: PostType) => {
+                  return acc + cur.comments;
+                }, 0)}
+              </span>
             </div>
 
             <div className="flex items-center justify-between">
@@ -178,7 +175,11 @@ export default function PostsSidebar({ posts }: { posts: PostType[] }) {
                 </div>
                 <span>Saved</span>
               </div>
-              <span className="font-semibold">{posts?.saved}</span>
+              <span className="font-semibold">
+                {posts?.reduce((acc, cur: PostType) => {
+                  return acc + cur.saved;
+                }, 0)}
+              </span>
             </div>
           </div>
         </CardContent>

@@ -10,7 +10,7 @@ import { api } from "@/lib/api";
 import { useSessionStore } from "@/lib/sessionStore";
 import { extractDate } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
-import { Edit, MoreVertical, Trash } from "lucide-react";
+import { Dot, Edit, MoreVertical, Trash } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import PostCommentCardSkeleton from "./skeletons/post-comment-card-skeleton";
@@ -37,6 +37,7 @@ export default function PostCommentCard({ comment }: { comment: any }) {
       console.log("🚀 ~ DeleteComment ~ res:", res);
       toast.success(`Comment ${comment?.id} deleted successfully!`);
       queryClient.invalidateQueries({ queryKey: ["Post_Comment"] });
+      queryClient.invalidateQueries({ queryKey: ["Post"] });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Error");
     }
@@ -68,8 +69,12 @@ export default function PostCommentCard({ comment }: { comment: any }) {
         <div className="">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 ">
-              <div className="text-sm font-semibold">
-                {user?.display_name || user?.username}
+              <div className="text-sm font-semibold">{user?.display_name}</div>
+              <div className={user?.display_name && `text-sm`}>
+                @{user?.username || user?.email}
+              </div>
+              <div>
+                <Dot />
               </div>
               <div className="text-xs text-gray-500">
                 {extractDate(comment?.created_at?.toString())}

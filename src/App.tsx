@@ -1,5 +1,6 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
+import { SocketProvider } from "./components/socket-context";
 import { useSessionStore } from "./lib/sessionStore";
 import ChatPage from "./pages/Chat";
 import ForgotPasswordPage from "./pages/ForgotPassword";
@@ -18,30 +19,30 @@ export default function App() {
     initializeSession();
   }, [initializeSession]);
 
-  return (
-    <React.Fragment>
+  if (!session) {
+    return (
       <Routes>
-        {session ? (
-          <>
-            <Route path="/chat/:id" element={<ChatPage />} />
-            <Route path="/chat" element={<ChatPage />} />
-            <Route path="/profile/:username" element={<ProfilePage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="*" element={<Home />} />
-          </>
-        ) : (
-          <>
-            <Route path="/" element={<Login />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route
-              path="/reset-password/:token"
-              element={<ResetPasswordConfirm />}
-            />
-          </>
-        )}
+        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route
+          path="/reset-password/:token"
+          element={<ResetPasswordConfirm />}
+        />
       </Routes>
-    </React.Fragment>
+    );
+  }
+
+  return (
+    <SocketProvider session={session}>
+      <Routes>
+        <Route path="/chat/:id" element={<ChatPage />} />
+        <Route path="/chat" element={<ChatPage />} />
+        <Route path="/profile/:username" element={<ProfilePage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="*" element={<Home />} />
+      </Routes>
+    </SocketProvider>
   );
 }

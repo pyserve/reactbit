@@ -6,14 +6,28 @@ import PostList from "@/components/post-list";
 import PostsSidebar from "@/components/post-sidebar";
 import ProfileImage from "@/components/profile-image";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserCard from "@/components/user-card";
+import { useConnectUser } from "@/hooks/connect-user";
 import { useFetchRecords } from "@/hooks/fetch-records";
 import { useSessionStore } from "@/lib/sessionStore";
 import { formatDateTime } from "@/lib/utils";
+import { UserType } from "@/schemas";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   CalendarDays,
+  Check,
+  Copy,
   Edit,
   LinkIcon,
   MapPin,
@@ -22,12 +36,23 @@ import {
   UserPlus,
 } from "lucide-react";
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import toast from "react-hot-toast";
+import { useNavigate, useParams } from "react-router-dom";
 
 export default function ProfilePage() {
   const { username } = useParams();
-  const [activeTab, setActiveTab] = useState();
+  // const [activeTab, setActiveTab] = useState<any>();
   const session = useSessionStore((state) => state.session);
+  const setSession = useSessionStore((state) => state.setSession);
+  const [copied, setCopied] = useState(false);
+  const navigate = useNavigate();
+  const connectUser = useConnectUser();
+  const queryClient = useQueryClient();
+  const [textColor, setTextColor] = useState([255, 255, 255]);
+  const textColorString = `rgb(${255 - textColor[0]}, ${255 - textColor[1]}, ${
+    255 - textColor[2]
+  })`;
+
   const { data: users } = useFetchRecords({
     model: "User",
     query: [{ key: "username", operator: "=", value: username }],
@@ -43,9 +68,45 @@ export default function ProfilePage() {
         operator: "=",
       },
     ],
+    enabled: !!user?.id,
   });
 
+  const profileUrl = window.location.origin + `/profile/${username}`;
   const isCurrentUser = session?.user.username === username;
+  const isFollowing = session?.user?.following?.some((uid) => uid === user?.id);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(profileUrl);
+    setCopied(true);
+    toast.success("Share link to the profile is copied!");
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const followUser = async (actionType: string, user: UserType) => {
+    if (!session) {
+      toast.error("Session not defined");
+      return;
+    }
+
+    try {
+      const updatedUser = await connectUser.mutateAsync({
+        current: session?.user,
+        other: user,
+        actionType,
+      });
+      console.log("🚀 ~ followUser ~ updatedUser:", updatedUser);
+      setSession(session.token, updatedUser);
+      toast.success(`You have successfully ${actionType}ed ${user.username}!`);
+      queryClient.invalidateQueries({
+        queryKey: [
+          "User",
+          [{ key: "username", operator: "=", value: username }],
+        ],
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Error");
+    }
+  };
 
   return (
     <div className="py-6 min-h-screen bg-white dark:bg-black text-black dark:text-white">
@@ -53,12 +114,12 @@ export default function ProfilePage() {
 
       <div className="relative">
         <div className="h-48 md:h-64 w-full bg-gray-200 dark:bg-gray-800 overflow-hidden">
-          <CoverPhoto user={user} />
+          <CoverPhoto user={user} setTextColor={setTextColor} />
         </div>
 
         <div className="container max-w-6xl mx-auto px-4">
           <div className="relative -mt-16 sm:-mt-20 mb-4 flex flex-col sm:flex-row sm:items-end sm:justify-between">
-            <ProfileImage user={user} />
+            <ProfileImage user={user} textColor={textColorString} />
 
             {/* Action Buttons */}
             <div className="mt-4 sm:mt-0 flex space-x-2">
@@ -80,19 +141,52 @@ export default function ProfilePage() {
                   <Button
                     variant="outline"
                     className="border-gray-200 dark:border-gray-800"
+                    onClick={() => navigate(`/chat/${user?.id}`)}
                   >
-                    <MessageSquare className="h-4 w-4 mr-2" />
+                    <MessageSquare className="h-4 w-4" />
                     Message
                   </Button>
-                  <Button>
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Follow
+                  <Button
+                    onClick={() =>
+                      isFollowing
+                        ? followUser("unfollow", user)
+                        : followUser("follow", user)
+                    }
+                  >
+                    {isFollowing ? <Check /> : <UserPlus className="h-4 w-4" />}
+                    {isFollowing ? "Following" : "Follow"}
                   </Button>
                 </>
               )}
-              <Button variant="ghost" size="icon">
-                <Share2 className="h-5 w-5" />
-              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Share2 className="h-5 w-5" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Share this profile</DialogTitle>
+                    <DialogDescription>
+                      Copy and share the link below.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="flex items-center gap-2 py-4">
+                    <Input value={profileUrl} readOnly />
+                    <Button variant="outline" onClick={handleCopy}>
+                      {copied ? <Check /> : <Copy className="w-4 h-4 mr-1" />}
+                    </Button>
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      variant="secondary"
+                      onClick={() => window.open(profileUrl, "_blank")}
+                    >
+                      Open Profile
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
 
@@ -151,33 +245,29 @@ export default function ProfilePage() {
           </div>
 
           {/* Tabs */}
-          <Tabs
-            defaultValue="posts"
-            className="mt-8"
-            onValueChange={setActiveTab}
-          >
-            <TabsList className="w-full border-b border-gray-200 dark:border-gray-800 bg-transparent p-0">
+          <Tabs defaultValue="posts" className="mt-8">
+            <TabsList className="w-full border-b bg-transparent p-0">
               <TabsTrigger
                 value="posts"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-gray-700 dark:data-[state=active]:border-white data-[state=active]:shadow-none py-2 px-4"
+                className="rounded-none border-b-2 border-transparent py-2 px-4 data-[state=active]:border-b-gray-400 data-[state=active]:bg-gray-100 data-[state=active]:font-bold"
               >
                 Posts ({posts?.length})
               </TabsTrigger>
               <TabsTrigger
                 value="followers"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-gray-700 dark:data-[state=active]:border-white data-[state=active]:shadow-none py-2 px-4"
+                className="rounded-none border-b-2 border-transparent py-2 px-4 data-[state=active]:border-b-gray-400 data-[state=active]:bg-gray-100 data-[state=active]:font-bold"
               >
                 Followers ({user?.followers?.length})
               </TabsTrigger>
               <TabsTrigger
                 value="following"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-gray-700 dark:data-[state=active]:border-white data-[state=active]:shadow-none py-2 px-4"
+                className="rounded-none border-b-2 border-transparent py-2 px-4 data-[state=active]:border-b-gray-400 data-[state=active]:bg-gray-100 data-[state=active]:font-bold"
               >
                 Following ({user?.following?.length})
               </TabsTrigger>
               <TabsTrigger
                 value="about"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-gray-700 dark:data-[state=active]:border-white data-[state=active]:shadow-none py-2 px-4"
+                className="rounded-none border-b-2 border-transparent py-2 px-4 data-[state=active]:border-b-gray-400 data-[state=active]:bg-gray-100 data-[state=active]:font-bold"
               >
                 About
               </TabsTrigger>
@@ -189,7 +279,7 @@ export default function ProfilePage() {
               className="mt-6 space-y-6 grid grid-cols-5 gap-4"
             >
               <div className="col-span-2">
-                <PostsSidebar posts={posts} />
+                <PostsSidebar posts={posts} user={user} />
               </div>
               <div className="col-span-3">
                 {posts?.length > 0 ? (
@@ -207,7 +297,11 @@ export default function ProfilePage() {
             {/* Followers Tab */}
             <TabsContent value="followers" className="mt-6 space-y-6">
               {user ? (
-                <UserCard users={[...(user?.followers ?? [])]} />
+                <UserCard
+                  users={[...(user?.followers ?? [])]}
+                  listType="followers"
+                  followUser={followUser}
+                />
               ) : (
                 <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                   <p>No following yet</p>
@@ -227,7 +321,11 @@ export default function ProfilePage() {
             {/* Following Tab */}
             <TabsContent value="following" className="mt-6 space-y-6">
               {user ? (
-                <UserCard users={[...(user?.following ?? [])]} />
+                <UserCard
+                  users={[...(user?.following ?? [])]}
+                  listType="following"
+                  followUser={followUser}
+                />
               ) : (
                 <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                   <p>No following yet</p>

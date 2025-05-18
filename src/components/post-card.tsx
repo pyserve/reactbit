@@ -34,7 +34,7 @@ import {
   MoreHorizontal,
   Trash,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { FaRegThumbsUp, FaThumbsUp } from "react-icons/fa";
 import { Link } from "react-router-dom";
@@ -42,6 +42,7 @@ import { CreatePostForm } from "./create-post-form";
 import PostComments from "./post-comments";
 import SharePost from "./share-post";
 import PostCardSkeleton from "./skeletons/post-card-skeleton";
+import { useSocket } from "./socket-context";
 import UserAvatar from "./user-avatar";
 
 export default function PostCard({ post }: { post: PostType }) {
@@ -50,24 +51,29 @@ export default function PostCard({ post }: { post: PostType }) {
   const { data: users } = useFetchRecords({
     model: "User",
     query: [{ key: "id", operator: "=", value: post.user?.toString() }],
+    enabled: !!post.user,
   });
   const { data: reactions } = useFetchRecords({
     model: "Post_Reaction",
     query: [{ key: "post", operator: "=", value: post.id?.toString() }],
+    enabled: !!post.id,
   });
   const { data: savedPosts } = useFetchRecords({
     model: "Saved_Post",
     query: [{ key: "post", operator: "=", value: post.id?.toString() }],
+    enabled: !!post.id,
   });
   const { data: comments } = useFetchRecords({
     model: "Post_Comment",
     query: [{ key: "post", operator: "=", value: post?.id?.toString() }],
+    enabled: !!post.id,
   });
   const { data: original_posts } = useFetchRecords({
     model: "Post",
     query: [
       { key: "id", operator: "=", value: post?.original_post?.toString() },
     ],
+    enabled: !!post?.original_post,
   });
 
   const queryClient = useQueryClient();
@@ -80,6 +86,16 @@ export default function PostCard({ post }: { post: PostType }) {
   const { confirmDialog } = useConfirmDialog();
   const likePost = useLikePost();
   const savePost = useSavedPost();
+  const notificationSocket = useSocket();
+
+  useEffect(() => {
+    if (!notificationSocket) return;
+    notificationSocket.onmessage = async (e) => {
+      const data = JSON.parse(e.data);
+      console.log("🚀 ~ notificationSocket.onmessage= ~ data:", data);
+      queryClient.invalidateQueries({ queryKey: ["Notification"] });
+    };
+  }, [notificationSocket]);
 
   const openDialog = () => {
     setTimeout(() => {
@@ -87,31 +103,37 @@ export default function PostCard({ post }: { post: PostType }) {
     }, 100);
   };
 
-  const onPostLike = async (postId: number) => {
-    console.log("🚀 ~ Home ~ postId:", postId);
+  const onPostLike = async (post: PostType) => {
     try {
       const res = await likePost.mutateAsync({
-        post: postId,
+        post: post.id,
         user: session?.user?.id,
       });
       if (res.detail) toast.success(res.detail);
       else toast.success("Post liked!");
+      notificationSocket?.send(
+        JSON.stringify({
+          ...res,
+          post_user: post.user,
+        })
+      );
       queryClient.invalidateQueries({ queryKey: ["Post_Reaction"] });
+      queryClient.invalidateQueries({ queryKey: ["Post"] });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Error");
     }
   };
 
-  const onSavedPost = async (postId: number) => {
-    console.log("🚀 ~ Home ~ postId:", postId);
+  const onSavedPost = async (post: PostType) => {
     try {
       const res = await savePost.mutateAsync({
-        post: postId,
+        post: post.id,
         user: session?.user?.id,
       });
       if (res.detail) toast.success(res.detail);
       else toast.success("Post saved!");
       queryClient.invalidateQueries({ queryKey: ["Saved_Post"] });
+      queryClient.invalidateQueries({ queryKey: ["Post"] });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Error");
     }
@@ -143,7 +165,8 @@ export default function PostCard({ post }: { post: PostType }) {
                 <div className="font-semibold">{user?.display_name}</div>
               </Link>
               <div className="text-sm text-gray-500 dark:text-gray-400">
-                @{user?.username} · {extractDate(post.created_at)}
+                @{user?.username} <span className="font-bold">·</span>{" "}
+                {extractDate(post.created_at)}
               </div>
             </div>
           </div>
@@ -196,7 +219,7 @@ export default function PostCard({ post }: { post: PostType }) {
       <CardContent className="pb-1">
         <p
           className="mb-1 text-sm text-justify"
-          dangerouslySetInnerHTML={{ __html: post.caption }}
+          dangerouslySetInnerHTML={{ __html: post?.caption }}
         ></p>
         <p
           className="border-t border-gray-200 py-2 mb-1 text-sm text-justify"
@@ -213,7 +236,7 @@ export default function PostCard({ post }: { post: PostType }) {
                 ? "text-blue-600 font-bold dark:text-blue-400"
                 : "text-gray-500 dark:text-gray-400"
             }
-            onClick={() => onPostLike(post.id)}
+            onClick={() => onPostLike(post)}
           >
             {isPostLiked ? (
               <FaThumbsUp className="h-5 w-5 text-blue-500" />
@@ -240,7 +263,7 @@ export default function PostCard({ post }: { post: PostType }) {
               ? "text-blue-600 dark:text-blue-400"
               : "text-gray-500 dark:text-gray-400"
           }
-          onClick={() => onSavedPost(post.id)}
+          onClick={() => onSavedPost(post)}
         >
           {isPostSaved ? (
             <BookmarkCheck className="h-4 w-4" />

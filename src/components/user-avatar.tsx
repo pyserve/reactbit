@@ -18,6 +18,13 @@ export default function UserAvatar({
       style={{
         width: size,
         height: size,
+        borderRadius: "50%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: size * 0.5,
+        color: "white",
+        fontWeight: "bold",
       }}
     >
       <AvatarImage

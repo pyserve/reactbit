@@ -1,28 +1,53 @@
+import { useUpdateRecord } from "@/hooks/update-record";
 import { getCroppedImg } from "@/lib/utils";
 import { UserType } from "@/schemas";
 import { Check, Edit, X } from "lucide-react";
 import { useRef, useState } from "react";
 import Cropper from "react-easy-crop";
+import toast from "react-hot-toast";
+import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import UserAvatar from "./user-avatar";
 
-export default function ProfileImage({ user }: { user: UserType }) {
+export default function ProfileImage({
+  user,
+  textColor,
+}: {
+  user: UserType;
+  textColor?: string;
+}) {
+  console.log("🚀 ~ textColor:", textColor);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isEditingAvatar, setIsEditingAvatar] = useState(false);
   const [tempAvatarUrl, setTempAvatarUrl] = useState<string | null>(null);
-  const [finalAvatar, setFinalAvatar] = useState<string | null>(null);
+  const updateRecord = useUpdateRecord();
 
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
 
-  const handleAvatarUpdate = (newUrl: string) => {
-    setFinalAvatar(newUrl);
-    user.image = newUrl;
-    setIsEditingAvatar(false);
-    setTempAvatarUrl(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+  const handleAvatarUpdate = async (newUrl: string) => {
+    try {
+      const file = fileInputRef.current?.files?.[0];
+      if (!file) return;
+      const formData = new FormData();
+      formData.append("image", file);
+      const res = await updateRecord.mutateAsync({
+        model: "User",
+        recordId: user?.id,
+        data: formData,
+      });
+      console.log("🚀 ~ handleAvatarUpdate ~ res:", res);
+      toast.success("Profile image updated successfully!");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Error");
+    } finally {
+      user.image = newUrl;
+      setIsEditingAvatar(false);
+      setTempAvatarUrl(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
@@ -69,11 +94,15 @@ export default function ProfileImage({ user }: { user: UserType }) {
           />
         </div>
 
-        <div className="mt-4 sm:mt-0 sm:ml-4 mb-5">
-          <h1 className="text-2xl font-bold capitalize">
-            {user?.display_name || user?.username}
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400">@{user?.username}</p>
+        <div className="mt-4 sm:mt-0 sm:ml-2 mb-5">
+          <Link to={`/profile/${user?.username}`}>
+            <h1 className="text-xl font-bold capitalize rounded-t-sm px-2 bg-white">
+              {user?.display_name || user?.username}
+            </h1>
+          </Link>
+          <p className="text-gray-500 dark:text-gray-400 px-2">
+            @{user?.username}
+          </p>
         </div>
       </div>
 

@@ -10,10 +10,14 @@ class Post(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_posts")
     caption = models.TextField(blank=True, null=True)
     likes = models.IntegerField(default=0)
+    comments = models.IntegerField(default=0)
+    shared = models.IntegerField(default=0)
+    saved = models.IntegerField(default=0)
     images = models.ManyToManyField(PostImage, blank=True)
     original_post = models.ForeignKey(
-        "self", null=True, blank=True, on_delete=models.CASCADE, related_name="shares"
+        "self", null=True, blank=True, on_delete=models.SET_NULL, related_name="shares"
     )
+    is_shared = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     updated_at = models.DateTimeField(auto_now=True)

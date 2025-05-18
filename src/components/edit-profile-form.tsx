@@ -19,7 +19,6 @@ import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
 import {
   Form,
   FormControl,
@@ -38,7 +37,6 @@ export function EditProfileForm({ user }: { user?: UserType }) {
   });
   const [IsLoading, setIsLoading] = useState(false);
   const updateRecord = useUpdateRecord();
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (user) {
@@ -55,11 +53,17 @@ export function EditProfileForm({ user }: { user?: UserType }) {
     setIsLoading(true);
     console.log("🚀 ~ onSubmit ~ values:", values);
     try {
+      const names = values?.display_name?.split(" ");
       const updatedUser = await updateRecord.mutateAsync({
         model: "User",
         recordId: user?.id,
-        data: values,
+        data: {
+          ...values,
+          first_name: names?.[0] || "",
+          last_name: names?.slice(1).join(" ") || "",
+        },
       });
+      console.log("🚀 ~ onSubmit ~ updatedUser:", updatedUser);
       setSession(session?.token ?? "", updatedUser);
       window.location.href = `/profile/${updatedUser.username}`;
     } catch (error) {

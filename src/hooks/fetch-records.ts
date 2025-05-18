@@ -3,10 +3,12 @@ import { DataType } from "@/schemas";
 import { useQuery } from "@tanstack/react-query";
 
 export const useFetchRecords = (data: DataType) => {
-  const q = data.query?.[0];
-  const queryStr = q ? `?${q.key}${q.operator || "="}${q.value}` : "";
+  const queries = data.query ?? [];
+  const queryStr = queries.length
+    ? "?" +
+      queries.map((q) => `${q.key}${q.operator || "="}${q.value}`).join("&")
+    : "";
   const url = `/${data.model.toLowerCase()}s/${queryStr}`;
-
   return useQuery({
     queryKey: [data.model, data.query],
     queryFn: async () => {
@@ -17,6 +19,6 @@ export const useFetchRecords = (data: DataType) => {
         throw new Error(error.message);
       }
     },
-    enabled: !!data.model,
+    enabled: data.enabled,
   });
 };

@@ -3,18 +3,21 @@ import { useSessionStore } from "@/lib/sessionStore";
 import { PieAvatarProps } from "@/schemas";
 import React from "react";
 
-const PieAvatar: React.FC<PieAvatarProps> = ({ participants, size = 40 }) => {
-  console.log("🚀 ~ participants:", participants);
+const PieAvatar: React.FC<PieAvatarProps> = ({
+  participants,
+  size = 40,
+  username,
+}) => {
   const session = useSessionStore((state) => state.session);
 
   const radius = size / 2;
 
-  const otherParticipants = participants.filter(
-    (p) => p.id !== session?.user?.id
+  const otherParticipants = participants.filter((p) =>
+    username ? p.username !== username : p.id !== session?.user?.id
   );
 
   // Case: Two participants → show the other user's avatar
-  if (participants.length === 2 && otherParticipants.length === 1) {
+  if (otherParticipants.length === 1) {
     const other = otherParticipants[0];
 
     if (other.image) {
@@ -24,7 +27,18 @@ const PieAvatar: React.FC<PieAvatarProps> = ({ participants, size = 40 }) => {
           alt={other.display_name || "User"}
           width={size}
           height={size}
-          style={{ borderRadius: "50%" }}
+          style={{
+            width: size,
+            height: size,
+            borderRadius: "50%",
+            backgroundColor: colors[0],
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: size * 0.5,
+            color: "white",
+            fontWeight: "bold",
+          }}
         />
       );
     }

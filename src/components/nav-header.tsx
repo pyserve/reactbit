@@ -5,27 +5,22 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useSessionStore } from "@/lib/sessionStore";
-import {
-  BellIcon,
-  CheckCircle2,
-  Inbox,
-  LogOut,
-  Settings,
-  User,
-} from "lucide-react";
+import { BellIcon, LogOut, Settings, User } from "lucide-react";
+import { useState } from "react";
 import { FaFacebookMessenger } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import pkg from "../../package.json";
+import Notification from "./notification";
 import UserAvatar from "./user-avatar";
 
 export default function Header() {
   const session = useSessionStore((state) => state.session);
   const clearSession = useSessionStore((state) => state.clearSession);
+  const [openNotification, setOpenNotification] = useState(false);
 
   const navigate = useNavigate();
 
@@ -49,49 +44,36 @@ export default function Header() {
 
           <div className="hidden sm:ml-6 sm:flex sm:items-center gap-2">
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="flex items-center px-0 py-0 rounded-full bg-gray-100"
-                  onClick={() => navigate("/chat/")}
-                >
-                  <FaFacebookMessenger />
-                </Button>
-              </DropdownMenuTrigger>
+              <div className="relative">
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="flex items-center px-0 py-0 rounded-full bg-gray-100"
+                    onClick={() => navigate("/chat/")}
+                  >
+                    <FaFacebookMessenger />
+                  </Button>
+                </DropdownMenuTrigger>
+                <span className="absolute bottom-6 left-5 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+                  {10}
+                </span>
+              </div>
             </DropdownMenu>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="flex items-center px-0 py-0 rounded-full bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-0"
-                >
-                  <BellIcon className="w-5 h-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-64">
-                <DropdownMenuLabel className="font-semibold">
-                  Notifications
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer">
-                  <Inbox className="mr-2 h-4 w-4 text-blue-500" />
-                  New message from John
-                </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">
-                  <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" />
-                  Task completed
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => {
-                    // Navigate to notifications/settings
-                  }}
-                  className="cursor-pointer"
-                >
-                  <Settings className="mr-2 h-4 w-4" />
-                  Notification Settings
-                </DropdownMenuItem>
-              </DropdownMenuContent>
+            <DropdownMenu
+              open={openNotification}
+              onOpenChange={setOpenNotification}
+            >
+              <div className="relative">
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="flex items-center px-0 py-0 rounded-full bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-0"
+                  >
+                    <BellIcon className="w-5 h-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <Notification openNotification={openNotification} />
+              </div>
             </DropdownMenu>
 
             {session?.user ? (

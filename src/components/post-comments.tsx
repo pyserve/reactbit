@@ -41,6 +41,7 @@ const PostComments = ({ postId }: { postId: number }) => {
       console.log("🚀 ~ handlePostComment ~ res:", res);
       toast.success("Comment added to a post!");
       queryClient.invalidateQueries({ queryKey: ["Post_Comment"] });
+      queryClient.invalidateQueries({ queryKey: ["Post"] });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "");
     }

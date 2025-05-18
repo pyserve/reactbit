@@ -5,6 +5,7 @@ from django.contrib import admin
 from django.urls import include, path
 from djauth.urls import router as AuthRouter
 from djauth.views import GoogleLogin, PasswordResetConfirm, PasswordResetRequest
+from notification.urls import router as NotificationRouter
 from post.urls import router as PostRouter
 from rest_framework.authtoken import views
 from rest_framework.routers import DefaultRouter
@@ -13,6 +14,7 @@ router = DefaultRouter()
 router.registry.extend(AuthRouter.registry)
 router.registry.extend(PostRouter.registry)
 router.registry.extend(ChatRouter.registry)
+router.registry.extend(NotificationRouter.registry)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
