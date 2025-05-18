@@ -1,54 +1,81 @@
-# React + TypeScript + Vite
+# React Bit - Social Media App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+![image](https://github.com/user-attachments/assets/3d639ace-a990-4c1e-a96c-462616e06912)
 
-Currently, two official plugins are available:
+![image](https://github.com/user-attachments/assets/f93926d8-bc99-4be6-8ff5-afd482965110)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+![image](https://github.com/user-attachments/assets/48b1ba72-69d3-40ba-a25b-9dd3a9266723)
 
-## Expanding the ESLint configuration
+![image](https://github.com/user-attachments/assets/d261032d-44d8-4200-afab-1fb8a5704abe)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+![image](https://github.com/user-attachments/assets/3b5525ce-5137-4162-afca-65475f1a05f2)
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+## Description
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+React Bit is a social media application with realtime chat and notification features.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Technologies
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+* **Frontend:**
+    * React + Vite
+    * Tailwind CSS + Shadcn UI
+    * Zustand
+    * React Query
+    * Axios
+    * User-password login + Google social auth, with forgot password features
+    * React Hook Form
+    * Zod
+    * Rich Text Editor: reactjs-tiptap-editor
+* **Backend:**
+    * Django
+    * Django Channels
+    * Django Allauth
+    * dj-rest-auth
+    * Django Rest Framework (DRF)
+
+## Features
+
+* Realtime chat
+* Notifications
+* User authentication (user-password and Google)
+* Forgot password functionality
+* Rich text posts
+
+## How to Run the Project
+
+1.  Clone the repository:
+    ```bash
+    git clone <repository_url>
+    ```
+2.  Navigate to the project folder:
+    ```bash
+    cd project_folder
+    ```
+3.  Install React dependencies:
+    ```bash
+    npm install
+    ```
+4.  Install Django (backend) dependencies:
+    ```bash
+    pip install -r requirements.txt
+    ```
+5.  Apply database migrations:
+    ```bash
+    python manage.py makemigrations
+    python manage.py migrate
+    ```
+6.  Run the Django development server:
+    ```bash
+    python manage.py runserver
+    ```
+7.  Run the React development server:
+    ```bash
+    npm run dev
+    ```
+
+## Notes
+
+* Ensure you have Python and Node.js installed.
+* Replace `<repository_url>` with the actual URL of your Git repository.
+* The Django server will typically run on `http://localhost:8000/`.
+* The React development server will typically run on `http://localhost:5173/`.  (Or other port if vite chooses)
