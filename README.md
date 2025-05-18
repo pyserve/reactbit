@@ -45,17 +45,17 @@ React Bit is a social media application with realtime chat and notification feat
 
 1.  Clone the repository:
     ```bash
-    git clone <repository_url>
+    https://github.com/pyserve/reactbit.git
     ```
 2.  Navigate to the project folder:
     ```bash
-    cd project_folder
+    cd reactbit
     ```
 3.  Install React dependencies:
     ```bash
     npm install
     ```
-4.  Install Django (backend) dependencies:
+4.  Install Django (backend) dependencies inside backend folder:
     ```bash
     pip install -r requirements.txt
     ```
@@ -76,6 +76,5 @@ React Bit is a social media application with realtime chat and notification feat
 ## Notes
 
 * Ensure you have Python and Node.js installed.
-* Replace `<repository_url>` with the actual URL of your Git repository.
 * The Django server will typically run on `http://localhost:8000/`.
-* The React development server will typically run on `http://localhost:5173/`.  (Or other port if vite chooses)
+* The React development server will typically run on `http://localhost:5173/`.
