@@ -1,12 +1,14 @@
 # React Bit - Social Media App
 
-## Sample Work
-
 ![image](https://github.com/user-attachments/assets/3d639ace-a990-4c1e-a96c-462616e06912)
 
 ![image](https://github.com/user-attachments/assets/f93926d8-bc99-4be6-8ff5-afd482965110)
 
+![image](https://github.com/user-attachments/assets/48b1ba72-69d3-40ba-a25b-9dd3a9266723)
 
+![image](https://github.com/user-attachments/assets/d261032d-44d8-4200-afab-1fb8a5704abe)
+
+![image](https://github.com/user-attachments/assets/3b5525ce-5137-4162-afca-65475f1a05f2)
 
 ## Description
 
