@@ -1,54 +1,71 @@
-# React + TypeScript + Vite
+# React Bit - Social Media App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Description
 
-Currently, two official plugins are available:
+React Bit is a social media application with realtime chat and notification features.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Technologies
 
-## Expanding the ESLint configuration
+* **Frontend:**
+    * React + Vite
+    * Tailwind CSS + Shadcn UI
+    * Zustand
+    * React Query
+    * Axios
+    * User-password login + Google social auth, with forgot password features
+    * React Hook Form
+    * Zod
+    * Rich Text Editor: reactjs-tiptap-editor
+* **Backend:**
+    * Django
+    * Django Channels
+    * Django Allauth
+    * dj-rest-auth
+    * Django Rest Framework (DRF)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Features
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+* Realtime chat
+* Notifications
+* User authentication (user-password and Google)
+* Forgot password functionality
+* Rich text posts
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## How to Run the Project
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1.  Clone the repository:
+    ```bash
+    git clone <repository_url>
+    ```
+2.  Navigate to the project folder:
+    ```bash
+    cd project_folder
+    ```
+3.  Install React dependencies:
+    ```bash
+    npm install
+    ```
+4.  Install Django (backend) dependencies:
+    ```bash
+    pip install -r requirements.txt
+    ```
+5.  Apply database migrations:
+    ```bash
+    python manage.py makemigrations
+    python manage.py migrate
+    ```
+6.  Run the Django development server:
+    ```bash
+    python manage.py runserver
+    ```
+7.  Run the React development server:
+    ```bash
+    npm run dev
+    ```
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+## Notes
+
+* Ensure you have Python and Node.js installed.
+* Replace `<repository_url>` with the actual URL of your Git repository.
+* The Django server will typically run on `http://localhost:8000/`.
+* The React development server will typically run on `http://localhost:5173/`.  (Or other port if vite chooses)
