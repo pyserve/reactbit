@@ -13,7 +13,7 @@ const queryClient = new QueryClient();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <GoogleOAuthProvider clientId="292000457428-0r959um9ivqddgulv8ds9llrhp1cf259.apps.googleusercontent.com">
         <QueryClientProvider client={queryClient}>
           <BrowserRouter>
