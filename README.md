@@ -1,5 +1,13 @@
 # React Bit - Social Media App
 
+## Sample Work
+
+![image](https://github.com/user-attachments/assets/3d639ace-a990-4c1e-a96c-462616e06912)
+
+![image](https://github.com/user-attachments/assets/f93926d8-bc99-4be6-8ff5-afd482965110)
+
+
+
 ## Description
 
 React Bit is a social media application with realtime chat and notification features.
