@@ -18,19 +18,21 @@ class ConversationViewset(ModelViewSet):
         user = self.request.user
         if not user.is_authenticated:
             return Conversation.objects.none()
+
+        queryset = Conversation.objects.filter(participants=user)
+        conversation_id = self.request.query_params.get("id")
+        if conversation_id:
+            queryset = queryset.filter(id=conversation_id)
+
         latest_message = (
             Message.objects.filter(conversation=OuterRef("pk"))
             .order_by("-timestamp")
             .values("timestamp")[:1]
         )
 
-        return (
-            Conversation.objects.filter(participants=user)
-            .annotate(
-                last_message_time=Subquery(latest_message, output_field=DateTimeField())
-            )
-            .order_by(Coalesce("last_message_time", "created_at").desc())
-        )
+        return queryset.annotate(
+            last_message_time=Subquery(latest_message, output_field=DateTimeField())
+        ).order_by(Coalesce("last_message_time", "created_at").desc())
 
 
 class MessageViewset(ModelViewSet):

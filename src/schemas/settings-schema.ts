@@ -7,16 +7,12 @@ export const AccountSchema = z.object({
   last_name: z.string().optional().nullable(),
   email: z
     .string()
+    .nullable()
     .optional()
     .transform((v) => (v === "" ? null : v))
-    .nullable()
-    .refine(
-      (v: string | null | undefined) =>
-        v === null || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
-      {
-        message: "Invalid email",
-      }
-    ),
+    .refine((v: any) => v === null || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), {
+      message: "Invalid email",
+    }),
   username: z.string().min(3, "Username must be at least 3 character long."),
   bio: z.string().optional(),
 });

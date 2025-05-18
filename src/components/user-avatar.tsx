@@ -28,7 +28,7 @@ export default function UserAvatar({
       }}
     >
       <AvatarImage
-        src={session?.user?.image || "/placeholder.svg?height=40&width=40"}
+        src={session?.user?.image || "/default-user.png"}
         alt={session?.user?.username || "User"}
       />
       <AvatarFallback className="capitalize">

@@ -9,19 +9,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useSessionStore } from "@/lib/sessionStore";
-import { BellIcon, LogOut, Settings, User } from "lucide-react";
-import { useState } from "react";
-import { FaFacebookMessenger } from "react-icons/fa";
+import { LogOut, Settings, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import pkg from "../../package.json";
+import MessageNotification from "./message-notifications";
 import Notification from "./notification";
 import UserAvatar from "./user-avatar";
 
 export default function Header() {
   const session = useSessionStore((state) => state.session);
   const clearSession = useSessionStore((state) => state.clearSession);
-  const [openNotification, setOpenNotification] = useState(false);
-
   const navigate = useNavigate();
 
   const logout = () => {
@@ -43,38 +40,8 @@ export default function Header() {
           </div>
 
           <div className="hidden sm:ml-6 sm:flex sm:items-center gap-2">
-            <DropdownMenu>
-              <div className="relative">
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="flex items-center px-0 py-0 rounded-full bg-gray-100"
-                    onClick={() => navigate("/chat/")}
-                  >
-                    <FaFacebookMessenger />
-                  </Button>
-                </DropdownMenuTrigger>
-                <span className="absolute bottom-6 left-5 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
-                  {10}
-                </span>
-              </div>
-            </DropdownMenu>
-            <DropdownMenu
-              open={openNotification}
-              onOpenChange={setOpenNotification}
-            >
-              <div className="relative">
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="flex items-center px-0 py-0 rounded-full bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-0"
-                  >
-                    <BellIcon className="w-5 h-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <Notification openNotification={openNotification} />
-              </div>
-            </DropdownMenu>
+            <MessageNotification />
+            <Notification />
 
             {session?.user ? (
               <DropdownMenu>

@@ -8,7 +8,7 @@ export default function GlobalSearch() {
       <Input
         placeholder="Search connections and posts?.data?..."
         value={""}
-        onChange={(e) => null}
+        onChange={(e) => console.log(e)}
         className="pl-10 bg-transparent border-gray-200 dark:border-gray-800"
       />
     </div>

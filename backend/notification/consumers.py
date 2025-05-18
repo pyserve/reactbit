@@ -9,20 +9,38 @@ from notification.models import Notification
 
 @database_sync_to_async
 def create_notification(data):
-    post_user_id = data.get("post_user", None)
-    user_id = data.get("user", None)
-    post = data.get("post", None)
-    user = User.objects.get(id=user_id)
-    post_user = User.objects.get(id=post_user_id)
-    content_type = ContentType.objects.get_for_id(1)
-    return Notification.objects.create(
-        recipient=post_user,
-        sender=user,
-        content_type=content_type,
-        object_id=1,
-        notification_type="like",
-        message=f"{user.username} liked your post {post}",
+    recipient = data.get("recipient", None)
+    sender = data.get("sender", None)
+    model = data.get("model", None)
+    record_id = data.get("record_id", None)
+    message = data.get("message", None)
+    notification_type = data.get("notification_type", None)
+    recipient_user = User.objects.get(id=recipient)
+    sender_user = User.objects.get(id=sender)
+    content_type = ContentType.objects.filter(model=model).first()
+    if content_type:
+        return Notification.objects.create(
+            recipient=recipient_user,
+            sender=sender_user,
+            content_type=content_type,
+            object_id=record_id,
+            notification_type=notification_type,
+            message=message,
+        )
+    return None
+
+
+@database_sync_to_async
+def read_message_notifications(recipient, sender):
+    notifications = Notification.objects.filter(
+        recipient_id=recipient,
+        sender_id=sender,
+        is_read=False,
+        notification_type="message",
     )
+    for n in notifications:
+        n.is_read = True
+        n.save()
 
 
 class NotificationConsumer(AsyncWebsocketConsumer):
@@ -42,29 +60,43 @@ class NotificationConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         data = json.loads(text_data)
-        post_user = data.get("post_user", None)
-        if post_user:
+        recipient = data.get("recipient", None)
+        deleted = data.get("deleted", None)
+        if recipient:
             await self.channel_layer.group_send(
-                f"user_{post_user}_notifications",
+                f"user_{recipient}_notifications",
                 {"type": "send_notification", "data": data},
+            )
+
+        if deleted:
+            await self.channel_layer.group_send(
+                f"user_{deleted}_notifications",
+                {"type": "deleted_notification", "data": data},
             )
 
     async def send_notification(self, event):
         data = event["data"]
-        user = data.get("user", None)
-        if user:
-            notify = await create_notification(data)
-            await self.send(
-                text_data=json.dumps(
-                    {
-                        "notification": notify.id,
-                    }
-                )
-            )
+        notify = await create_notification(data)
         await self.send(
             text_data=json.dumps(
                 {
-                    "data": data,
+                    "notification": notify.id,
+                }
+            )
+        )
+
+    async def deleted_notification(self, event):
+        await self.send(text_data=json.dumps({"notification": event["data"]}))
+
+    async def read_all_message_notification(self, event):
+        recipient = event["recipient"]
+        sender = event["sender"]
+
+        await read_message_notifications(recipient, sender)
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "read_all_notifications": True,
                 }
             )
         )

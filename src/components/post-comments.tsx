@@ -3,23 +3,26 @@ import { Textarea } from "@/components/ui/textarea";
 import { useFetchRecords } from "@/hooks/fetch-records";
 import { usePostComment } from "@/hooks/post-engagement";
 import { useSessionStore } from "@/lib/sessionStore";
+import { PostType } from "@/schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { MessageCircle, Send } from "lucide-react";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 import PostCommentCard from "./post-comment-card";
 import PostCommentSkeleton from "./skeletons/post-comment-skeleton";
+import { useSocket } from "./socket-context";
 import { Card, CardContent, CardTitle } from "./ui/card";
 
-const PostComments = ({ postId }: { postId: number }) => {
+const PostComments = ({ post }: { post: PostType }) => {
   const [newComment, setNewComment] = useState("");
   const postComment = usePostComment();
   const session = useSessionStore((s) => s.session);
   const queryClient = useQueryClient();
+  const notificationSocket = useSocket();
 
   const { data: comments } = useFetchRecords({
     model: "Post_Comment",
-    query: [{ key: "post", operator: "=", value: postId?.toString() }],
+    query: [{ key: "post", operator: "=", value: post?.id?.toString() }],
   });
 
   const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -33,13 +36,25 @@ const PostComments = ({ postId }: { postId: number }) => {
     }
     try {
       const res = await postComment.mutateAsync({
-        post: postId,
+        post_id: post?.id,
         user: session?.user?.id,
         text: newComment,
       });
       setNewComment("");
       console.log("🚀 ~ handlePostComment ~ res:", res);
       toast.success("Comment added to a post!");
+      if (post?.user !== session?.user?.id) {
+        notificationSocket?.send(
+          JSON.stringify({
+            recipient: post?.user,
+            sender: session?.user?.id,
+            model: "postcomment",
+            record_id: res?.id,
+            notification_type: "comment",
+            message: `${session?.user?.username} commented on your post ${post.id}`,
+          })
+        );
+      }
       queryClient.invalidateQueries({ queryKey: ["Post_Comment"] });
       queryClient.invalidateQueries({ queryKey: ["Post"] });
     } catch (error) {
@@ -47,7 +62,7 @@ const PostComments = ({ postId }: { postId: number }) => {
     }
   };
 
-  if (!postId) return <PostCommentSkeleton />;
+  if (!post) return <PostCommentSkeleton />;
 
   return (
     <Card className="relative w-full  bg-white rounded-md shadow-md border p-0">
@@ -68,9 +83,6 @@ const PostComments = ({ postId }: { postId: number }) => {
             >
               <Send />
             </Button>
-            {/* <Button size={"sm"} variant={"secondary"}>
-              <LucideUpload />
-            </Button> */}
           </div>
         </div>
       </CardContent>
@@ -83,7 +95,11 @@ const PostComments = ({ postId }: { postId: number }) => {
         )}
         <div className="space-y-4 p-4">
           {comments?.map((comment: any) => (
-            <PostCommentCard key={comment.id} comment={comment} />
+            <PostCommentCard
+              key={comment.id}
+              postUser={post.user}
+              comment={comment}
+            />
           ))}
           {comments?.length === 0 && (
             <p className="flex justify-center text-sm  text-gray-500">

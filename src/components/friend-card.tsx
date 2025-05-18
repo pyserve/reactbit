@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import { FaFacebookMessenger } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import FriendCardSkeleton from "./skeletons/friend-card-skeletons";
+import { useSocket } from "./socket-context";
 import UserAvatar from "./user-avatar";
 
 export default function FriendCard({
@@ -26,6 +27,7 @@ export default function FriendCard({
   const connectUser = useConnectUser();
   const session = useSessionStore((state) => state.session);
   const setSession = useSessionStore((state) => state.setSession);
+  const notificationSocket = useSocket();
   const { data: user, isFetched } = useFetchRecords({
     model: "User",
     query: [
@@ -56,6 +58,18 @@ export default function FriendCard({
         other: user?.[0],
         actionType,
       });
+      if (actionType === "follow" && user?.[0]?.id !== session?.user?.id) {
+        notificationSocket?.send(
+          JSON.stringify({
+            recipient: user?.[0]?.id,
+            sender: session?.user?.id,
+            model: "user",
+            record_id: user?.[0]?.id,
+            notification_type: "follow",
+            message: `${session?.user?.username} started following you`,
+          })
+        );
+      }
       setSession(session.token, updatedUser);
       toast.success(message);
     } catch (error) {

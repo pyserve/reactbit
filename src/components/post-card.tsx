@@ -109,14 +109,28 @@ export default function PostCard({ post }: { post: PostType }) {
         post: post.id,
         user: session?.user?.id,
       });
-      if (res.detail) toast.success(res.detail);
-      else toast.success("Post liked!");
-      notificationSocket?.send(
-        JSON.stringify({
-          ...res,
-          post_user: post.user,
-        })
-      );
+      console.log("🚀 ~ onPostLike ~ res:", res);
+      if (res.detail) {
+        toast.success(res.detail);
+        notificationSocket?.send(
+          JSON.stringify({
+            deleted: post.user,
+          })
+        );
+      } else {
+        notificationSocket?.send(
+          JSON.stringify({
+            recipient: post.user,
+            sender: session?.user?.id,
+            model: "postreaction",
+            record_id: res.id,
+            notification_type: "like",
+            message: `${session?.user?.username} liked your post ${post.id}`,
+          })
+        );
+        toast.success("Post liked!");
+      }
+
       queryClient.invalidateQueries({ queryKey: ["Post_Reaction"] });
       queryClient.invalidateQueries({ queryKey: ["Post"] });
     } catch (error) {
@@ -272,7 +286,7 @@ export default function PostCard({ post }: { post: PostType }) {
           )}
         </Button>
       </CardFooter>
-      <PostComments postId={post?.id} />
+      <PostComments post={post} />
     </Card>
   );
 }

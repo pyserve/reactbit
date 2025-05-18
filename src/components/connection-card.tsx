@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useSessionStore } from "@/lib/sessionStore";
 import { RefreshCw, Users } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function ConnectionCard({
   followers,
@@ -28,6 +28,10 @@ export default function ConnectionCard({
   const session = useSessionStore((state) => state.session);
 
   const isMobile = useMediaQuery("(max-width: 768px)");
+
+  useEffect(() => {
+    setSearch("");
+  }, []);
 
   return (
     <div className="lg:col-span-5 xl:col-span-4 space-y-6">

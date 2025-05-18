@@ -19,9 +19,9 @@ export const useUpdateRecord = () =>
         );
         console.log("🚀 ~ mutationFn: ~ res:", res);
         return res.data;
-      } catch (error) {
+      } catch (error: any) {
         throw new Error(
-          error instanceof Error
+          error.response
             ? JSON.stringify(Object.values(error?.response?.data).join(", "))
             : "Error"
         );

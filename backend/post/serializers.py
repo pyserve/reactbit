@@ -23,6 +23,11 @@ class PostReactionSerializer(serializers.ModelSerializer):
 
 
 class PostCommentSerializer(serializers.ModelSerializer):
+    post = PostSerializer(read_only=True)
+    post_id = serializers.PrimaryKeyRelatedField(
+        queryset=models.Post.objects.all(), source="post", write_only=True
+    )
+
     class Meta:
         model = models.PostComment
         fields = "__all__"

@@ -5,6 +5,7 @@ import Header from "@/components/nav-header";
 import PostList from "@/components/post-list";
 import PostsSidebar from "@/components/post-sidebar";
 import ProfileImage from "@/components/profile-image";
+import { useSocket } from "@/components/socket-context";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -48,6 +49,7 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const connectUser = useConnectUser();
   const queryClient = useQueryClient();
+  const notificationSocket = useSocket();
   const [textColor, setTextColor] = useState([255, 255, 255]);
   const textColorString = `rgb(${255 - textColor[0]}, ${255 - textColor[1]}, ${
     255 - textColor[2]
@@ -96,6 +98,18 @@ export default function ProfilePage() {
       });
       console.log("🚀 ~ followUser ~ updatedUser:", updatedUser);
       setSession(session.token, updatedUser);
+      if (actionType === "follow" && user.id !== session?.user?.id) {
+        notificationSocket?.send(
+          JSON.stringify({
+            recipient: user.id,
+            sender: session?.user?.id,
+            model: "user",
+            record_id: user.id,
+            notification_type: "follow",
+            message: `${session?.user?.username} started following you`,
+          })
+        );
+      }
       toast.success(`You have successfully ${actionType}ed ${user.username}!`);
       queryClient.invalidateQueries({
         queryKey: [

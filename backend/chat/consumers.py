@@ -19,10 +19,18 @@ def get_conversation_participants(conversation_id):
 
 
 @database_sync_to_async
-def read_message(message_id):
-    message = Message.objects.get(pk=message_id)
-    message.is_read = True
-    message.save()
+def read_messages(conversation_id):
+    messages = Message.objects.filter(conversation=conversation_id, is_read=False)
+    for message in messages:
+        message.is_read = True
+        message.save()
+
+
+@database_sync_to_async
+def save_message(conversation_id, user, sender, message):
+    if sender.get("id", None) == user.id:
+        conversation = Conversation.objects.get(id=conversation_id)
+        Message.objects.create(conversation=conversation, sender=user, content=message)
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -41,23 +49,35 @@ class ChatConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         message = data.get("message")
         typing = data.get("typing")
-        read_all = data.get("read_all")
 
-        participants = await get_conversation_participants(self.conversation_id)
         if message:
-            user_info = await get_user_data(self.user)
+            participants = await get_conversation_participants(self.conversation_id)
+            sender = await get_user_data(self.user)
+            for user in participants:
+                if user != self.user.id:
+                    await self.channel_layer.group_send(
+                        f"user_{user}_notifications",
+                        {
+                            "type": "send_notification",
+                            "data": {
+                                "recipient": user,
+                                "sender": sender.get("id", None),
+                                "model": "user",
+                                "record_id": user,
+                                "notification_type": "message",
+                                "message": message,
+                            },
+                        },
+                    )
+
             await self.channel_layer.group_send(
                 self.group_name,
                 {
                     "type": "chat_message",
                     "message": message,
-                    "sender": user_info,
+                    "sender": sender,
                 },
             )
-            for user in participants:
-                await self.channel_layer.group_send(
-                    f"user_{user}", {"type": "conversation_update", "data": data}
-                )
 
         if typing is not None:
             await self.channel_layer.group_send(
@@ -69,21 +89,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 },
             )
 
-        if read_all:
-            message_id = data.get("message_id")
-            await self.channel_layer.group_send(
-                self.group_name,
-                {
-                    "type": "read_message",
-                    "message_id": message_id,
-                    "participants": participants,
-                },
-            )
-
     async def chat_message(self, event):
         sender = event["sender"]
         message = event["message"]
-        await self.save_message(self.user, sender, message)
+        await save_message(self.conversation_id, self.user, sender, message)
         await self.send(
             text_data=json.dumps(
                 {
@@ -103,30 +112,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
         )
 
-    async def read_message(self, event):
-        message_id = event["message_id"]
-        participants = event["participants"]
-        await read_message(message_id)
-        for user in participants:
-            await self.channel_layer.group_send(
-                f"user_{user}", {"type": "conversation_update", "data": message_id}
-            )
-        await self.send(
-            text_data=json.dumps(
-                {
-                    "read_all": True,
-                }
-            )
-        )
-
-    @database_sync_to_async
-    def save_message(self, user, sender, message):
-        if sender.get("id", None) == user.id:
-            conversation = Conversation.objects.get(id=self.conversation_id)
-            Message.objects.create(
-                conversation=conversation, sender=user, content=message
-            )
-
 
 class ConversationConsumber(AsyncWebsocketConsumer):
     async def connect(self):
@@ -140,13 +125,42 @@ class ConversationConsumber(AsyncWebsocketConsumer):
 
     async def receive(self, text_data=None, bytes_data=None):
         data = json.loads(text_data)
-        await self.channel_layer.group_send(
-            self.group_name,
-            {
-                "type": "conversation_update",
-                "data": data,
-            },
-        )
+        conversation_id = data.get("conversation_id", None)
+        read_all = data.get("read_all", None)
+        if conversation_id:
+            participants = await get_conversation_participants(conversation_id)
+            for user in participants:
+                await self.channel_layer.group_send(
+                    f"user_{user}",
+                    {
+                        "type": "conversation_update",
+                        "participants": participants,
+                        "conversation_id": conversation_id,
+                        "read_all": read_all,
+                    },
+                )
 
     async def conversation_update(self, event):
-        await self.send(text_data=json.dumps({"data": event["data"]}))
+        conversation_id = event["conversation_id"]
+        participants = event["participants"]
+        read_all = event["read_all"]
+        if read_all:
+            await read_messages(conversation_id)
+            for user in participants:
+                if user != self.user_id:
+                    await self.channel_layer.group_send(
+                        f"user_{user}_notifications",
+                        {
+                            "type": "read_all_message_notification",
+                            "recipient": user,
+                            "sender": self.user_id,
+                        },
+                    )
+
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "read_all": True,
+                }
+            )
+        )

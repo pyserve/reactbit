@@ -2,22 +2,27 @@ import { Plus } from "lucide-react";
 import NewChatDialog from "./new-chat-dialog";
 import PieAvatar from "./pie-avatar";
 
+import { useFetchRecords } from "@/hooks/fetch-records";
 import { useSessionStore } from "@/lib/sessionStore";
 import { extractDate } from "@/lib/utils";
-import { ConversationType, fetchOrCreateConversationType } from "@/schemas";
+import { ConversationType } from "@/schemas";
+import { useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useConversationSocket } from "./conversation-socket-context";
+import { useSocket } from "./socket-context";
 
 export default function ConversationList({
-  conversations,
-  fetchOrCreateConversation,
   activeChat,
   onSelectChat,
 }: {
-  conversations: ConversationType[];
-  fetchOrCreateConversation: fetchOrCreateConversationType;
   activeChat: string | null;
   onSelectChat: (id: string) => void;
 }) {
+  const socket = useConversationSocket();
+  const notificationSocket = useSocket();
+  const queryClient = useQueryClient();
   const session = useSessionStore((state) => state.session);
+  const { data: conversations } = useFetchRecords({ model: "Conversation" });
 
   const getParticipantsName = (conversation: ConversationType) => {
     return conversation?.participants
@@ -26,7 +31,7 @@ export default function ConversationList({
       .join(", ");
   };
 
-  const getMessageTime = (conversation: ConversationType) => {
+  const getLastMessageTime = (conversation: ConversationType) => {
     return (
       conversation?.messages.length > 0 &&
       conversation.messages[conversation.messages.length - 1] &&
@@ -57,6 +62,34 @@ export default function ConversationList({
     return activeChat == conversation?.id ? "bg-white" : "bg-gray-100";
   };
 
+  const markReadConversation = (conversationId: string) => {
+    socket?.send(
+      JSON.stringify({
+        conversation_id: conversationId,
+        read_all: true,
+      })
+    );
+  };
+
+  useEffect(() => {
+    if (socket) {
+      socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log("🚀 ~ useEffect ~ data:", data);
+        queryClient.invalidateQueries({ queryKey: ["Conversation"] });
+      };
+    }
+  }, [socket]);
+
+  useEffect(() => {
+    if (!notificationSocket) return;
+    notificationSocket.onmessage = async (e) => {
+      const data = JSON.parse(e.data);
+      console.log("🚀 ~ notificationSocket.onmessage= ~ data:", data);
+      queryClient.invalidateQueries({ queryKey: ["Notification"] });
+    };
+  }, [notificationSocket]);
+
   return (
     <div className="w-full md:w-1/3 border-r bg-gray-50 dark:bg-gray-950">
       <div className="p-4 border-b">
@@ -64,7 +97,6 @@ export default function ConversationList({
           <h2 className="text-lg font-semibold">Messages</h2>
           <div className="">
             <NewChatDialog
-              createNewConversation={fetchOrCreateConversation}
               trigger={
                 <>
                   <Plus />
@@ -83,7 +115,10 @@ export default function ConversationList({
               activeChat,
               conversation
             )}`}
-            onClick={() => onSelectChat(conversation?.id)}
+            onClick={() => {
+              onSelectChat(conversation?.id);
+              markReadConversation(conversation.id);
+            }}
           >
             <PieAvatar participants={conversation?.participants ?? []} />
 
@@ -100,7 +135,7 @@ export default function ConversationList({
                   {getMessage(conversation)?.content ?? "No Message"}
                 </div>
                 <p className="text-xs text-[11px] text-gray-500">
-                  {getMessageTime(conversation)}
+                  {getLastMessageTime(conversation)}
                 </p>
               </div>
             </div>

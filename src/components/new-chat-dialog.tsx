@@ -7,25 +7,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useCreateRecord } from "@/hooks/create-record";
 import { useFetchRecords } from "@/hooks/fetch-records";
 import { useSessionStore } from "@/lib/sessionStore";
-import { fetchOrCreateConversationType, UserType } from "@/schemas";
+import { UserType } from "@/schemas";
 import { ReactElement, useState } from "react";
+import toast from "react-hot-toast";
 import { FaFacebookMessenger } from "react-icons/fa";
 import PieAvatar from "./pie-avatar";
 import { UserListSkeleton } from "./skeletons/user-list-skeletion";
 import { Button } from "./ui/button";
 
-export default function NewChatDialog({
-  createNewConversation,
-  trigger,
-}: {
-  createNewConversation: fetchOrCreateConversationType;
-  trigger?: ReactElement;
-}) {
+export default function NewChatDialog({ trigger }: { trigger?: ReactElement }) {
   const session = useSessionStore((state) => state.session);
-
   const [dialogOpen, setDialogOpen] = useState(false);
+  const createRecord = useCreateRecord();
 
   const followers = session?.user?.followers ?? [];
   const following = session?.user?.following ?? [];
@@ -40,8 +36,20 @@ export default function NewChatDialog({
     ],
   });
 
+  const fetchOrCreateConversation = async (participants: UserType[]) => {
+    try {
+      const data = await createRecord.mutateAsync({
+        url: "/conversations/",
+        data: { participants: participants?.map((u) => u?.id) },
+      });
+      console.log("🚀 ~ fetchOrCreateConversation ~ data:", data);
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
   const handleStartChat = (participants: UserType[]) => {
-    createNewConversation(participants);
+    fetchOrCreateConversation(participants);
     setDialogOpen(false);
   };
 

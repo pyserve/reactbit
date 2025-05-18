@@ -8,153 +8,122 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { extractDate } from "@/lib/utils";
-import { handleSendMessageType, SessionType } from "@/schemas";
 import { ArrowLeft, MoreVertical, Send, Video } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+
+import { useFetchRecords } from "@/hooks/fetch-records";
+import { useSessionStore } from "@/lib/sessionStore";
+import { ActiveChatType } from "@/pages/Chat";
+import { MessageType, UserType } from "@/schemas";
+import { useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+import { useChatSocket } from "./chat-scoket-context";
 import ConversationSelector from "./conversation-selector";
+import { useConversationSocket } from "./conversation-socket-context";
 import PieAvatar from "./pie-avatar";
 
-import {
-  ConversationType,
-  fetchOrCreateConversationType,
-  MessageType,
-} from "@/schemas";
-import toast from "react-hot-toast";
-
 export default function ChatWindow({
-  conversation,
-  fetchOrCreateConversation,
-  messages,
-  message,
-  setMessage,
-  handleSendMessage,
-  isMobile,
   onBack,
-  session,
+  activeChat,
 }: {
-  conversation: ConversationType | null;
-  fetchOrCreateConversation: fetchOrCreateConversationType;
-  messages: MessageType[];
-  message: string;
-  setMessage: (msg: string) => void;
-  handleSendMessage: handleSendMessageType;
-  isMobile: boolean;
   onBack: () => void;
-  session: SessionType;
+  activeChat: ActiveChatType;
 }) {
-  const [typing, setTyping] = useState<boolean | null>(null);
-  const socket = useRef<WebSocket | null>(null);
+  const socket = useChatSocket();
+  const conversationSocket = useConversationSocket();
+  const queryClient = useQueryClient();
+  const [message, setMessage] = useState("");
+  const session = useSessionStore((s) => s.session);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [typing, setTyping] = useState<boolean | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const getMessage = (conversation: ConversationType) =>
-    conversation?.messages?.at(-1);
+  const { data: conversations } = useFetchRecords({
+    model: "Conversation",
+    query: [{ key: "id", operator: "=", value: activeChat }],
+    enabled: !!activeChat,
+  });
+
+  const { data: messages } = useFetchRecords({
+    model: "Message",
+    query: [{ key: "conversation", operator: "=", value: activeChat }],
+    enabled: !!activeChat,
+  });
+  const conversation = conversations?.[0];
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, typing]);
 
   useEffect(() => {
-    if (socket.current) {
-      socket.current.close();
-      socket.current = null;
-    }
-    if (conversation && !socket.current) {
-      socket.current = new WebSocket(
-        `ws://127.0.0.1:8000/ws/chat/${conversation?.id}/?token=${session?.token}`
-      );
-      const last_message = getMessage(conversation);
-      const isReciepent = session?.user?.id !== last_message?.sender?.id;
-
-      if (last_message && isReciepent) {
-        sendSocketMessage({
-          read_all: true,
-          message_id: getMessage(conversation)?.id,
-        });
-      }
-    }
-  }, [conversation]);
-
-  useEffect(() => {
-    if (socket.current) {
-      socket.current.onmessage = function (e) {
-        const data = JSON.parse(e.data);
-        console.log("🚀 ~ Socket ~ received data:", data);
-        if (data.message && data.sender) {
-          handleSendMessage(data);
+    if (socket) {
+      socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log("🚀 ~ useEffect ~ data:", data);
+        if (data.message) {
+          conversationSocket?.send(
+            JSON.stringify({
+              conversation_id: activeChat,
+            })
+          );
+          queryClient.invalidateQueries({ queryKey: ["Message"] });
         }
-        if (
-          data.typing !== undefined &&
-          data?.user?.username !== session?.user?.username
-        ) {
-          setTyping(data.typing);
+        if (data.typing && data.user?.id !== session?.user?.id) {
+          setTyping(true);
+          timerRef.current = setTimeout(() => {
+            setTyping(false);
+          }, 3000);
         }
       };
-
-      socket.current.onclose = function () {
-        console.info(`Chat socket with id-${conversation?.id} closed.`);
-      };
     }
-  }, [socket.current]);
+  }, [socket]);
 
-  const sendSocketMessage = (data: any) => {
-    if (socket.current?.readyState === WebSocket.OPEN) {
-      socket.current.send(JSON.stringify(data));
-    } else {
-      socket.current?.addEventListener("open", () => {
-        socket.current?.send(JSON.stringify(data));
-      });
-    }
-  };
-  const handleSubmitChat = () => {
-    sendSocketMessage({ message });
+  const handleSubmitChat = async () => {
+    socket?.send(
+      JSON.stringify({
+        message,
+        sender: session?.user?.id,
+      })
+    );
+    setMessage("");
   };
 
   const handleTyping = () => {
-    sendSocketMessage({
-      typing: true,
-      sender: session?.user?.username,
-    });
-    setTimeout(() => {
-      sendSocketMessage({
-        typing: false,
-        sender: session?.user?.username,
-      });
-    }, 2000);
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    socket?.send(
+      JSON.stringify({
+        typing: true,
+      })
+    );
   };
 
-  if (!conversation) {
-    return (
-      <ConversationSelector createNewConversation={fetchOrCreateConversation} />
-    );
+  if (!activeChat) {
+    return <ConversationSelector />;
   }
 
   return (
     <div className="w-full md:w-2/3 flex flex-col">
       <div className="p-4 border-b flex items-center justify-between">
         <div className="flex items-center">
-          {isMobile && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onBack}
-              className="mr-2"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          )}
-          <PieAvatar participants={conversation.participants} />
+          <Button variant="ghost" size="icon" onClick={onBack} className="mr-2">
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+
+          <PieAvatar participants={conversation?.participants} />
 
           <div className="ms-3">
             <h2 className="font-semibold">
               {conversation?.participants
-                ?.filter((u) => u?.id !== session?.user?.id)
-                .map((p) => p.display_name)
+                ?.filter((u: UserType) => u?.id !== session?.user?.id)
+                .map((p: UserType) => p.display_name)
                 .join(", ")}
             </h2>
             <p className="text-xs text-gray-500">
               @
-              {conversation.participants?.[0]?.username ||
-                conversation.participants?.[0]?.email}
+              {conversation?.participants?.[0]?.username ||
+                conversation?.participants?.[0]?.email}
             </p>
           </div>
         </div>
@@ -188,7 +157,7 @@ export default function ChatWindow({
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((msg) => (
+        {messages?.map((msg: MessageType) => (
           <div
             key={msg.id}
             className={`flex ${

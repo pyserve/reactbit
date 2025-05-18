@@ -14,34 +14,31 @@ import { Dot, Edit, MoreVertical, Trash } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import PostCommentCardSkeleton from "./skeletons/post-comment-card-skeleton";
+import { useSocket } from "./socket-context";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import UserAvatar from "./user-avatar";
 
-export default function PostCommentCard({ comment }: { comment: any }) {
+export default function PostCommentCard({
+  comment,
+  postUser,
+}: {
+  comment: any;
+  postUser?: number;
+}) {
   const queryClient = useQueryClient();
   const { confirmDialog } = useConfirmDialog();
   const session = useSessionStore((s) => s.session);
   const [IsEditing, setIsEditing] = useState(false);
   const [editedComment, setEditedComment] = useState(comment?.text);
+  const notificationSocket = useSocket();
+
   const { data: users } = useFetchRecords({
     model: "User",
     query: [{ key: "id", operator: "=", value: comment?.user }],
   });
 
-  const DeleteComment = async () => {
-    try {
-      const ok = await confirmDialog({});
-      if (!ok) throw new Error("Operation cancelled!");
-      const res = await api.delete(`/post_comments/${comment?.id}/`);
-      console.log("🚀 ~ DeleteComment ~ res:", res);
-      toast.success(`Comment ${comment?.id} deleted successfully!`);
-      queryClient.invalidateQueries({ queryKey: ["Post_Comment"] });
-      queryClient.invalidateQueries({ queryKey: ["Post"] });
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Error");
-    }
-  };
+  const user = users?.[0];
 
   const EditComment = async () => {
     console.log("🚀 ~ EditComment ~ ok:", editedComment);
@@ -58,7 +55,24 @@ export default function PostCommentCard({ comment }: { comment: any }) {
     }
   };
 
-  const user = users?.[0];
+  const DeleteComment = async () => {
+    try {
+      const ok = await confirmDialog({});
+      if (!ok) throw new Error("Operation cancelled!");
+      const res = await api.delete(`/post_comments/${comment?.id}/`);
+      console.log("🚀 ~ DeleteComment ~ res:", res);
+      toast.success(`Comment ${comment?.id} deleted successfully!`);
+      notificationSocket?.send(
+        JSON.stringify({
+          deleted: postUser,
+        })
+      );
+      queryClient.invalidateQueries({ queryKey: ["Post_Comment"] });
+      queryClient.invalidateQueries({ queryKey: ["Post"] });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Error");
+    }
+  };
 
   if (!comment) return <PostCommentCardSkeleton />;
 

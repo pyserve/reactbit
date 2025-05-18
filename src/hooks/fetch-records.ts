@@ -10,7 +10,7 @@ export const useFetchRecords = (data: DataType) => {
     : "";
   const url = `/${data.model.toLowerCase()}s/${queryStr}`;
   return useQuery({
-    queryKey: [data.model, data.query],
+    queryKey: [data.model, JSON.stringify(data.query)],
     queryFn: async () => {
       try {
         const res = await api.get(url);

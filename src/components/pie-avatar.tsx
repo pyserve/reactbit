@@ -12,12 +12,12 @@ const PieAvatar: React.FC<PieAvatarProps> = ({
 
   const radius = size / 2;
 
-  const otherParticipants = participants.filter((p) =>
+  const otherParticipants = participants?.filter((p) =>
     username ? p.username !== username : p.id !== session?.user?.id
   );
 
   // Case: Two participants → show the other user's avatar
-  if (otherParticipants.length === 1) {
+  if (otherParticipants?.length === 1) {
     const other = otherParticipants[0];
 
     if (other.image) {
@@ -69,11 +69,11 @@ const PieAvatar: React.FC<PieAvatarProps> = ({
   }
 
   // Case: Group chat → draw pie-style avatar
-  const letters = participants.map(
+  const letters = participants?.map(
     (p) => p.display_name?.trim()?.[0]?.toUpperCase() ?? "?"
   );
 
-  const pieSlices = letters.map((letter, index) => {
+  const pieSlices = letters?.map((letter, index) => {
     const startAngle = (index / participants.length) * 360;
     const endAngle = ((index + 1) / participants.length) * 360;
     const largeArc = endAngle - startAngle > 180 ? 1 : 0;

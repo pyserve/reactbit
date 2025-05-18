@@ -45,13 +45,7 @@ type PostType = {
   saved: number;
   created_at: string;
   updated_at: string;
-  user: {
-    id: number;
-    name: string;
-    username: string;
-    avatar: string;
-    display_name: string;
-  };
+  user: number;
   is_shared: boolean;
   comments: string[];
   isLiked: boolean;
@@ -149,7 +143,7 @@ export type SessionType = {
     id: number;
     name?: string;
     email?: string;
-    image?: string;
+    image?: string | null;
     username: string;
   };
   token?: string;

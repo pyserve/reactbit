@@ -1,5 +1,7 @@
-from django.db.models.signals import post_delete, post_save
+from django.contrib.contenttypes.models import ContentType
+from django.db.models.signals import post_delete, post_save, pre_delete
 from django.dispatch import receiver
+from notification.models import Notification
 from post import models
 
 
@@ -66,3 +68,21 @@ def decrement_shared_count(sender, instance, **kwargs):
             original_post=post, is_shared=True
         ).count()
         post.save(update_fields=["shared"])
+
+
+@receiver(pre_delete, sender=models.PostReaction)
+def delete_reaction_notification(sender, instance, **kwargs):
+    if instance:
+        content_type = ContentType.objects.get_for_model(instance.__class__)
+        Notification.objects.filter(
+            content_type=content_type, object_id=instance.id
+        ).delete()
+
+
+@receiver(pre_delete, sender=models.PostComment)
+def delete_comment_notification(sender, instance, **kwargs):
+    if instance:
+        content_type = ContentType.objects.get_for_model(instance.__class__)
+        Notification.objects.filter(
+            content_type=content_type, object_id=instance.id
+        ).delete()
