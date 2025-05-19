@@ -9,8 +9,8 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { FaFacebookMessenger } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
+import { useSocket } from "../contexts/socket-context";
 import FriendCardSkeleton from "./skeletons/friend-card-skeletons";
-import { useSocket } from "./socket-context";
 import UserAvatar from "./user-avatar";
 
 export default function FriendCard({

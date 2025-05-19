@@ -175,7 +175,7 @@ export const CreatePostForm = ({
         <Button
           type="button"
           variant={"default"}
-          className=""
+          className="dark:bg-gray-900 dark:text-gray-100"
           onClick={SubmitPost}
           disabled={IsLoading}
         >

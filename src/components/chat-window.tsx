@@ -17,9 +17,9 @@ import { ActiveChatType } from "@/pages/Chat";
 import { MessageType, UserType } from "@/schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { useChatSocket } from "./chat-scoket-context";
+import { useChatSocket } from "../contexts/chat-scoket-context";
+import { useConversationSocket } from "../contexts/conversation-socket-context";
 import ConversationSelector from "./conversation-selector";
-import { useConversationSocket } from "./conversation-socket-context";
 import PieAvatar from "./pie-avatar";
 
 export default function ChatWindow({

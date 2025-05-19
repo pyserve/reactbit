@@ -9,13 +9,13 @@ import {
 import { TabsContent } from "@/components/ui/tabs";
 import { Moon, Sun } from "lucide-react";
 
-import { Theme, useTheme } from "@/components/theme-provider";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Theme, useTheme } from "@/contexts/theme-provider";
 import { Label } from "./ui/label";
 
 export default function AppearanceSettings({

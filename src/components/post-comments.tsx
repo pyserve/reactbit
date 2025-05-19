@@ -1,17 +1,15 @@
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useFetchRecords } from "@/hooks/fetch-records";
 import { usePostComment } from "@/hooks/post-engagement";
 import { useSessionStore } from "@/lib/sessionStore";
 import { PostType } from "@/schemas";
 import { useQueryClient } from "@tanstack/react-query";
-import { MessageCircle, Send } from "lucide-react";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
+import { useSocket } from "../contexts/socket-context";
 import PostCommentCard from "./post-comment-card";
 import PostCommentSkeleton from "./skeletons/post-comment-skeleton";
-import { useSocket } from "./socket-context";
-import { Card, CardContent, CardTitle } from "./ui/card";
+import { Card, CardContent } from "./ui/card";
 
 const PostComments = ({ post }: { post: PostType }) => {
   const [newComment, setNewComment] = useState("");
@@ -65,34 +63,25 @@ const PostComments = ({ post }: { post: PostType }) => {
   if (!post) return <PostCommentSkeleton />;
 
   return (
-    <Card className="relative w-full  bg-white rounded-md shadow-md border p-0">
-      <CardContent className="sticky top-0 bg-white z-10 border-b p-0">
-        <div className="flex items-center space-x-2 p-4">
+    <Card className="relative gap-0 p-0 rounded-se-none rounded-ss-none border-t-0">
+      <CardContent className="px-4 py-2">
+        <div className="flex items-center">
           <Textarea
             value={newComment}
             onChange={handleInputChange}
             placeholder="Leave a comment..."
-            className="resize-none shadow-sm flex-grow"
+            className="resize-none flex-grow"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handlePostComment();
+              }
+            }}
           />
-          <div className="grid gap-1">
-            <Button
-              variant={"secondary"}
-              onClick={handlePostComment}
-              size={"sm"}
-              className="h-10"
-            >
-              <Send />
-            </Button>
-          </div>
         </div>
       </CardContent>
 
       <CardContent className="overflow-y-auto max-h-100 relative p-0">
-        {comments?.length > 0 && (
-          <CardTitle className="sticky top-0 bg-white p-2 px-4 z-1 flex items-center gap-2 pt-0 border-b border-gray-50">
-            <MessageCircle size={20} /> Post Comments
-          </CardTitle>
-        )}
         <div className="space-y-4 p-4">
           {comments?.map((comment: any) => (
             <PostCommentCard

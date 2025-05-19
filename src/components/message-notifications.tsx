@@ -38,7 +38,7 @@ export default function MessageNotification() {
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className="flex items-center px-0 py-0 rounded-full bg-gray-100"
+            className="flex items-center px-0 py-0 rounded-full bg-gray-100 dark:bg-gray-800"
             onClick={() => navigate("/chat/")}
           >
             <FaFacebookMessenger />

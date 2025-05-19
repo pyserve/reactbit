@@ -24,7 +24,7 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white">
       <Header />
 
-      <div className="container max-w-[80%] mx-auto px-4 py-8">
+      <div className="max-w-[96%] sm:max-w-[90%] md:max-w-[80%] lg:max-w-[70%] mx-auto py-8">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
             {formSubmitted && (

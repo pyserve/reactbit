@@ -8,8 +8,8 @@ import { extractDate } from "@/lib/utils";
 import { ConversationType } from "@/schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { useConversationSocket } from "./conversation-socket-context";
-import { useSocket } from "./socket-context";
+import { useConversationSocket } from "../contexts/conversation-socket-context";
+import { useSocket } from "../contexts/socket-context";
 
 export default function ConversationList({
   activeChat,
@@ -111,7 +111,7 @@ export default function ConversationList({
         {conversations?.map((conversation: ConversationType) => (
           <div
             key={conversation?.id}
-            className={`flex items-center p-3 border-b cursor-pointer hover:bg-gray-50 ${isActiveChat(
+            className={`flex items-center p-3 border-b cursor-pointer hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 ${isActiveChat(
               activeChat,
               conversation
             )}`}

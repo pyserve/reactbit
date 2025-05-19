@@ -52,7 +52,7 @@ export default function PostsSidebar({
         <div className="">
           <Dialog>
             <DialogTrigger asChild>
-              <Button className="w-full">
+              <Button className="w-full dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-white">
                 <PlusCircle className="h-4 w-4" />
                 Create New Post
               </Button>
@@ -72,7 +72,7 @@ export default function PostsSidebar({
         </div>
       )}
       <Card className="border-gray-200 dark:border-gray-800 shadow-sm py-0 gap-3">
-        <CardHeader className="bg-gray-100 py-5">
+        <CardHeader className="bg-gray-100 py-5 dark:bg-gray-900">
           <CardTitle className="text-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 font-bold">
@@ -104,8 +104,8 @@ export default function PostsSidebar({
       </Card>
 
       <Card className="border-gray-200 dark:border-gray-800 shadow-sm py-0 gap-3">
-        <CardHeader className="bg-gray-100 py-5">
-          <CardTitle className="text-sm">
+        <CardHeader className="bg-gray-100 py-5 dark:bg-gray-900">
+          <CardTitle className="text-sm ">
             <div className="flex items-center gap-2 font-bold">
               <BarChart2 className="h-4 w-4 text-gray-500" />
               <span>Post Statistics</span>

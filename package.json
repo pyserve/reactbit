@@ -1,6 +1,6 @@
 {
   "name": "reactbit",
-  "backend_url": "https://reactbit.pythonanywhere.com",
+  "backend_url": "https://reactbit.pythonanywhere.com/",
   "private": true,
   "version": "0.0.0",
   "type": "module",

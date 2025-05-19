@@ -64,7 +64,7 @@ export default function SecuritySettings({
         </CardHeader>
         <CardContent>
           <Alert className="mb-4">
-            <AlertDescription className="flex gap-1 text-gray-900">
+            <AlertDescription className="flex gap-1 text-gray-900 dark:text-gray-200 dark:hover:text-gray-100">
               <Command />
               <span>
                 If you are logged in with your Google account, please reset your

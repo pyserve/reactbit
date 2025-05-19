@@ -107,9 +107,9 @@ export default function Notification() {
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className="flex items-center px-0 py-0 rounded-full bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-0"
+            className="flex items-center px-0 py-0 rounded-full bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-0 dark:bg-gray-800"
           >
-            <BellIcon className="w-5 h-5" />
+            <BellIcon className="w-5 h-5 " />
           </Button>
         </DropdownMenuTrigger>
 
@@ -159,7 +159,7 @@ export default function Notification() {
                 return (
                   <DropdownMenuItem
                     key={notification?.id}
-                    className="relative group items-start cursor-pointer bg-gray-50 hover:bg-gray-100 mb-1"
+                    className="relative group items-start cursor-pointer bg-gray-50 hover:bg-gray-100 mb-1 dark:bg-gray-800 dark:hover:bg-gray-700"
                   >
                     <UserAvatar user={notification.sender} />
                     <div>
@@ -211,7 +211,7 @@ export default function Notification() {
                 return (
                   <DropdownMenuItem
                     key={notification?.id}
-                    className="items-start cursor-pointer bg-gray-50 hover:bg-gray-100 mb-1"
+                    className="items-start cursor-pointer bg-gray-50 hover:bg-gray-100 mb-1 dark:bg-gray-800 dark:hover:bg-gray-700"
                   >
                     <UserAvatar user={notification.sender} />
                     <div>

@@ -5,7 +5,6 @@ import Header from "@/components/nav-header";
 import PostList from "@/components/post-list";
 import PostsSidebar from "@/components/post-sidebar";
 import ProfileImage from "@/components/profile-image";
-import { useSocket } from "@/components/socket-context";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserCard from "@/components/user-card";
+import { useSocket } from "@/contexts/socket-context";
 import { useConnectUser } from "@/hooks/connect-user";
 import { useFetchRecords } from "@/hooks/fetch-records";
 import { useSessionStore } from "@/lib/sessionStore";
@@ -131,7 +131,7 @@ export default function ProfilePage() {
           <CoverPhoto user={user} setTextColor={setTextColor} />
         </div>
 
-        <div className="container max-w-6xl mx-auto px-4">
+        <div className="container md:max-w-6xl mx-auto px-4">
           <div className="relative -mt-16 sm:-mt-20 mb-4 flex flex-col sm:flex-row sm:items-end sm:justify-between">
             <ProfileImage user={user} textColor={textColorString} />
 
@@ -292,10 +292,10 @@ export default function ProfilePage() {
               value="posts"
               className="mt-6 space-y-6 grid grid-cols-5 gap-4"
             >
-              <div className="col-span-2">
+              <div className="col-span-12 md:col-span-2 ">
                 <PostsSidebar posts={posts} user={user} />
               </div>
-              <div className="col-span-3">
+              <div className="col-span-12 md:col-span-3">
                 {posts?.length > 0 ? (
                   <div className="space-y-6">
                     <PostList posts={posts} />
@@ -309,7 +309,7 @@ export default function ProfilePage() {
             </TabsContent>
 
             {/* Followers Tab */}
-            <TabsContent value="followers" className="mt-6 space-y-6">
+            <TabsContent value="followers" className="mt-6 space-y-6 ">
               {user ? (
                 <UserCard
                   users={[...(user?.followers ?? [])]}

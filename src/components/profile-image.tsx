@@ -96,7 +96,7 @@ export default function ProfileImage({
 
         <div className="mt-4 sm:mt-0 sm:ml-2 mb-5">
           <Link to={`/profile/${user?.username}`}>
-            <h1 className="text-xl font-bold capitalize rounded-t-sm px-2 bg-white">
+            <h1 className="text-xl font-bold capitalize rounded-t-sm px-2 bg-white dark:bg-gray-800 dark:hover:bg-gray-700">
               {user?.display_name || user?.username}
             </h1>
           </Link>

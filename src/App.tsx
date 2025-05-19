@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
-import { SocketProvider } from "./components/socket-context";
+import { SocketProvider } from "./contexts/socket-context";
 import { useSessionStore } from "./lib/sessionStore";
 import ChatPage from "./pages/Chat";
 import ForgotPasswordPage from "./pages/ForgotPassword";

@@ -1,9 +1,9 @@
 "use client";
-import { ChatSocketProvider } from "@/components/chat-scoket-context";
 import ChatWindow from "@/components/chat-window";
 import ConversationList from "@/components/conversation-list";
-import { ConversationSocketProvider } from "@/components/conversation-socket-context";
 import Header from "@/components/nav-header";
+import { ChatSocketProvider } from "@/contexts/chat-scoket-context";
+import { ConversationSocketProvider } from "@/contexts/conversation-socket-context";
 import { useSessionStore } from "@/lib/sessionStore";
 import { useState } from "react";
 
