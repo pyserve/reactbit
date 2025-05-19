@@ -9,7 +9,7 @@ export default function Login() {
         <span className="text-4xl font-bold uppercase">{pkg.name}</span>
       </div>
 
-      <div className="grid w-full max-w-[400px] gap-6 bg-white p-6 rounded-2xl">
+      <div className="grid w-full max-w-[400px] gap-6 bg-white p-6 rounded-2xl dark:bg-gray-800">
         <div className="grid gap-2 text-center">
           <h1 className="text-2xl font-bold">Welcome back</h1>
           <p className="text-muted-foreground">

@@ -54,7 +54,7 @@ export function ForgotPasswordForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 ">
         <FormField
           control={form.control}
           name="email"
@@ -85,7 +85,7 @@ export function ForgotPasswordForm() {
 
           <Button
             type="submit"
-            className=" text-white font-medium px-6"
+            className="font-medium px-6"
             disabled={isLoading}
           >
             {isLoading ? (

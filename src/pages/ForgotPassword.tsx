@@ -3,7 +3,7 @@ import pkg from "../../package.json";
 
 export default function ForgotPasswordPage() {
   return (
-    <div className="flex min-h-screen w-full flex-col items-center justify-center bg-gray-50 p-4">
+    <div className="flex min-h-screen w-full flex-col items-center justify-center bg-gray-50 bg-gradient-to-br from-slate-50 to-slate-100 p-4 dark:from-slate-900 dark:to-slate-950">
       <div className="w-full max-w-[450px] space-y-8">
         {/* Google Logo */}
         <div className="flex justify-center text-4xl font-bold uppercase">
@@ -11,16 +11,16 @@ export default function ForgotPasswordPage() {
         </div>
 
         <div className="text-center">
-          <h1 className="text-2xl font-normal text-gray-900">
+          <h1 className="text-2xl font-normal text-gray-900 dark:text-gray-100">
             Forgot password
           </h1>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             Enter your email address and we'll send you a link to reset your
             password.
           </p>
         </div>
 
-        <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200  dark:bg-gray-900 ">
           <ForgotPasswordForm />
         </div>
 
