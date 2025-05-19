@@ -1,5 +1,7 @@
 # React Bit - Social Media App
 
+![image](https://github.com/user-attachments/assets/a8131ac6-631a-4045-a388-d8b459904f7e)
+
 ![image](https://github.com/user-attachments/assets/3d639ace-a990-4c1e-a96c-462616e06912)
 
 ![image](https://github.com/user-attachments/assets/f93926d8-bc99-4be6-8ff5-afd482965110)
