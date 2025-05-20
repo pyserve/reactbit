@@ -14,7 +14,7 @@ const queryClient = new QueryClient();
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <GoogleOAuthProvider clientId="292000457428-0r959um9ivqddgulv8ds9llrhp1cf259.apps.googleusercontent.com">
+      <GoogleOAuthProvider clientId="292000457428-9rdjdrjlso61mh7a9sfe2civg6e1mrv5.apps.googleusercontent.com">
         {/* clientId="292000457428-0r959um9ivqddgulv8ds9llrhp1cf259.apps.googleusercontent.com" */}
         {/* dev clientId="292000457428-9rdjdrjlso61mh7a9sfe2civg6e1mrv5.apps.googleusercontent.com" */}
         <QueryClientProvider client={queryClient}>
