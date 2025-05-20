@@ -42,6 +42,11 @@ BACKEND_URL = "http://localhost:8000"
 AUTH_USER_MODEL = "djauth.User"
 
 CORS_ALLOW_ALL_ORIGINS = True
+CSRF_TRUSTED_ORIGINS = [
+    "https://reactbit-backend.onrender.com",
+    "http://localhost:5173",
+    "http://localhost:8000",
+]
 
 CHANNEL_LAYERS = {
     "default": {
