@@ -113,10 +113,7 @@ export default function Notification() {
           </Button>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent
-          align="end"
-          className="w-auto max-h-[350px] overflow-auto"
-        >
+        <DropdownMenuContent align="end" className="w-auto">
           <DropdownMenuLabel className="py-1 font-semibold flex justify-between items-center">
             <div className="flex gap-1 items-center ">
               <BellDot size={16} />
@@ -141,7 +138,10 @@ export default function Notification() {
               </DropdownMenuSub>
             </DropdownMenuGroup>
           </DropdownMenuLabel>
-          <Tabs defaultValue="all" className="min-w-[300px]">
+          <Tabs
+            defaultValue="all"
+            className="min-w-[300px] max-h-[400px] overflow-auto"
+          >
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="unread">Unread</TabsTrigger>
