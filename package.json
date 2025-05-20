@@ -1,7 +1,5 @@
 {
   "name": "reactbit",
-  "backend_url": "https://reactbit-backend.onrender.com",
-  "backend_host": "reactbit-backend.onrender.com",
   "private": true,
   "version": "0.0.0",
   "type": "module",

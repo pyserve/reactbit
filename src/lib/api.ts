@@ -1,12 +1,13 @@
+import { backend_url } from "@/contexts";
 import axios from "axios";
-import pkg from "../../package.json";
 import { useSessionStore } from "./sessionStore";
 
 export const api = axios.create({
-  baseURL: pkg.backend_url,
+  baseURL: backend_url,
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true,
 });
 
 api.interceptors.request.use(

@@ -7,7 +7,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import * as pkg from "../../package.json";
+import { backend_host, protocol } from ".";
 
 type ChatSocketContextType = WebSocket | null;
 const ChatSocketContext = createContext<ChatSocketContextType>(null);
@@ -32,7 +32,7 @@ export const ChatSocketProvider: React.FC<ChatSocketProviderProps> = ({
   useEffect(() => {
     if (session?.token && conversationId) {
       const ws = new WebSocket(
-        `ws://${pkg.backend_host}/ws/chat/${conversationId}/?token=${session.token}`
+        `${protocol}://${backend_host}/ws/chat/${conversationId}/?token=${session.token}`
       );
 
       ws.onopen = () => {

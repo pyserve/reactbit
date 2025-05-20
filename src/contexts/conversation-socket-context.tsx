@@ -7,7 +7,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import * as pkg from "../../package.json";
+import { backend_host, protocol } from ".";
 
 type ConversationSocketContextType = WebSocket | null;
 const ConversationSocketContext =
@@ -31,7 +31,7 @@ export const ConversationSocketProvider: React.FC<
   useEffect(() => {
     if (session?.token) {
       const ws = new WebSocket(
-        `ws://${pkg.backend_host}/ws/conversation/${session?.user?.id}/?token=${session.token}`
+        `${protocol}://${backend_host}/ws/conversation/${session?.user?.id}/?token=${session.token}`
       );
 
       ws.onopen = () => {
