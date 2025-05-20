@@ -1,8 +1,8 @@
+import { backend_url } from "@/contexts";
 import { api } from "@/lib/api";
 import { LoginFormSchemaType } from "@/schemas/login-schema";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
-import * as pkg from "../../package.json";
 
 export const useLogin = () =>
   useMutation({
@@ -34,7 +34,7 @@ export const useLoginWithGoogle = () =>
         });
         console.log("🚀 ~ mutationFn: ~ res:", res);
         const token = res?.data?.key;
-        axios.defaults.baseURL = pkg.backend_url;
+        axios.defaults.baseURL = backend_url;
         const res1 = await axios.get(`/users/me/`, {
           headers: {
             Authorization: `Token ${token}`,
