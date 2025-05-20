@@ -5,6 +5,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
+import * as pkg from "../../package.json";
 
 type SocketContextType = WebSocket | null;
 const SocketContext = createContext<SocketContextType>(null);
@@ -27,7 +28,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
   useEffect(() => {
     if (session?.token) {
       const ws = new WebSocket(
-        `ws://127.0.0.1:8000/ws/notifications/?token=${session.token}`
+        `ws://${pkg.backend_host}/ws/notifications/?token=${session.token}`
       );
 
       ws.onopen = () => {
