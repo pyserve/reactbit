@@ -113,7 +113,10 @@ export default function Notification() {
           </Button>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent align="end" className="w-auto">
+        <DropdownMenuContent
+          align="end"
+          className="w-auto max-h-[350px] overflow-auto"
+        >
           <DropdownMenuLabel className="py-1 font-semibold flex justify-between items-center">
             <div className="flex gap-1 items-center ">
               <BellDot size={16} />
