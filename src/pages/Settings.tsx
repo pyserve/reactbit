@@ -1,10 +1,6 @@
 "use client";
 
 import Header from "@/components/nav-header";
-import AccountSettings from "@/components/settings-accounts";
-import AppearanceSettings from "@/components/settings-appearance";
-import NotificationSettings from "@/components/settings-notifications";
-import SecuritySettings from "@/components/settings-security";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Bell, Check, CogIcon, Moon, Shield, User } from "lucide-react";
@@ -79,10 +75,10 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="flex-1">
-                  <AccountSettings setFormSubmitted={setFormSubmitted} />
+                  {/* <AccountSettings setFormSubmitted={setFormSubmitted} />
                   <NotificationSettings setFormSubmitted={setFormSubmitted} />
                   <AppearanceSettings setFormSubmitted={setFormSubmitted} />
-                  <SecuritySettings setFormSubmitted={setFormSubmitted} />
+                  <SecuritySettings setFormSubmitted={setFormSubmitted} /> */}
                 </div>
               </div>
             </Tabs>
